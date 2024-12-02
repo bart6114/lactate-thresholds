@@ -1,12 +1,11 @@
-import pytest
-from lactate_thresholds import process
 import pandas as pd
 
+from lactate_thresholds import process
 test_instances = {
     "simple": [
         {"step": 0, "length": 0, "intensity": 0, "lactate": 1.0, "heart_rate": 80},
-        {"step": 1, "length": 4, "intensity": 8.5, "lactate": 2.2, "heart_rate": 122},
-        {"step": 2, "length": 4, "intensity": 10.0, "lactate": 1.3, "heart_rate": 131},
+        {"step": 1, "length": 4, "intensity": 8.5, "lactate": 1, "heart_rate": 122},
+        {"step": 2, "length": 4, "intensity": 10.0, "lactate": 1, "heart_rate": 131},
         {"step": 3, "length": 4, "intensity": 11.5, "lactate": 1.0, "heart_rate": 145},
         {"step": 4, "length": 4, "intensity": 13.0, "lactate": 0.8, "heart_rate": 155},
         {"step": 5, "length": 4, "intensity": 14.5, "lactate": 1.1, "heart_rate": 162},
@@ -17,5 +16,7 @@ test_instances = {
 
 
 def test_interpolation():
-    ld = pd.DataFrame.from_dict(test_instances["simple"])
-    idf = process.interpolate(ld)
+    df = pd.DataFrame.from_dict(test_instances["simple"])
+    dfc = process.lactate_data(df)
+    dfi = process.interpolate(dfc, include_baseline=False)
+    print(process.determine_ltp(dfc, dfi))
