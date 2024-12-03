@@ -3,6 +3,7 @@ import pandas as pd
 import pwlf
 import statsmodels.api as sm
 
+from lactate_thresholds.types import LactateThresholdPoint, LactateThresholdResults
 from lactate_thresholds.utils import retrieve_heart_rate
 
 
@@ -72,15 +73,19 @@ def determine_ltp(
     # Get breakpoint intensities and corresponding lactate values
     breakpoint_intensities = breakpoints[1:-1]  # Ignore first and last points
     breakpoint_lactates = pwlf_model.predict(breakpoint_intensities)
+    breakpoint_heartrates = retrieve_heart_rate(data_clean, breakpoint_intensities)
 
-    # Build result DataFrame
-    result = pd.DataFrame(
-        {
-            "method": [f"LTP{i + 1}" for i in range(len(breakpoint_intensities))],
-            "intensity": np.round(breakpoint_intensities, 2),
-            "lactate": breakpoint_lactates,
-            "heart_rate": retrieve_heart_rate(data_clean, breakpoint_intensities),
-        }
+    lt1 = LactateThresholdPoint(
+        lactate=breakpoint_lactates[0],
+        intensity=breakpoint_intensities[0],
+        heart_rate=breakpoint_heartrates[0],
+    )
+    lt2 = LactateThresholdPoint(
+        lactate=breakpoint_lactates[1],
+        intensity=breakpoint_intensities[1],
+        heart_rate=breakpoint_heartrates[1],
     )
 
-    return result
+    return LactateThresholdResults(
+        clean_data=data_clean, interpolated_data=data_interpolated, ltp1=lt1, ltp2=lt2
+    )

@@ -2,8 +2,8 @@ import logging
 
 import pandas as pd
 
-from lactate_thresholds import model, process
-from lactate_thresholds import determine
+from lactate_thresholds import determine, model, process
+
 
 def test_interpolation(test_instances):
     df = pd.DataFrame.from_dict(test_instances["simple"])
@@ -23,6 +23,7 @@ def test_interpolation_watt_intensity(test_instances):
     dfc = process.clean_data(df, lactate_col="lactate_8")
     dfi = model.interpolate(dfc, include_baseline=False)
     logging.info(model.determine_ltp(dfc, dfi))
+
 
 def test_convenience_determine(test_instances):
     df = pd.DataFrame.from_dict(test_instances["cycling2"])

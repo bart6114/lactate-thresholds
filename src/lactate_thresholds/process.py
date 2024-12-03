@@ -1,7 +1,4 @@
-import numpy as np
 import pandas as pd
-import pwlf
-import statsmodels.api as sm
 
 from lactate_thresholds.model import determine_ltp, interpolate
 
@@ -14,7 +11,6 @@ def clean_data(
     lactate_col: str = "lactate",
     heart_rate_col: str = "heart_rate",
 ) -> pd.DataFrame:
-    
     ## if df not a dataframe raise valueerror
     if not isinstance(df, pd.DataFrame):
         raise ValueError("Input is not a DataFrame")
@@ -41,15 +37,18 @@ def clean_data(
     return df_clean
 
 
-def determine(df: pd.DataFrame,
+def determine(
+    df: pd.DataFrame,
     step_col: str = "step",
     length_col: str = "length",
     intensity_col: str = "intensity",
     lactate_col: str = "lactate",
-    heart_rate_col: str = "heart_rate", include_baseline = False) -> pd.DataFrame:
-
-    dfc = clean_data(df, step_col, length_col, intensity_col, lactate_col, heart_rate_col)
+    heart_rate_col: str = "heart_rate",
+    include_baseline=False,
+) -> pd.DataFrame:
+    dfc = clean_data(
+        df, step_col, length_col, intensity_col, lactate_col, heart_rate_col
+    )
     dfi = interpolate(dfc, include_baseline=include_baseline)
 
     return determine_ltp(dfc, dfi)
-    

@@ -31,6 +31,7 @@ def test_lactate_data_ingestion_non_numeric(test_instances):
     with pytest.raises(ValueError):
         process.clean_data(df, heart_rate_col="heartrate")
 
+
 def test_should_raise_err_if_not_dataframe(test_instances):
     with pytest.raises(ValueError):
         process.clean_data(test_instances["non_numeric_vals"])
