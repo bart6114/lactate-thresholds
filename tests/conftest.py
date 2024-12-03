@@ -1,5 +1,18 @@
 import pytest
+import os
 
+
+@pytest.fixture
+def test_output_dir():
+    """Ensure the test_output directory exists, or create it."""
+    dir_path = "test_output"
+    
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    
+    assert os.path.isdir(dir_path), f"{dir_path} is not a directory"
+    
+    return dir_path
 
 @pytest.fixture
 def test_instances():
