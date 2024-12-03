@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from lactate-thresholds!")
+from lactate_thresholds.process import determine
