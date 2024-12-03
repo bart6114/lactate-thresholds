@@ -1,6 +1,7 @@
-import pytest
-from lactate_thresholds import process
 import pandas as pd
+import pytest
+
+from lactate_thresholds import process
 
 test_instances = {
     "simple": [
@@ -13,7 +14,8 @@ test_instances = {
         {"step": 6, "length": 4, "intensity": 16.0, "lactate": 1.8, "heart_rate": 171},
         {"step": 7, "length": 4, "intensity": 17.5, "lactate": 2.9, "heart_rate": 180},
         {"step": 8, "length": 4, "intensity": 19.0, "lactate": 5.3, "heart_rate": 186},
-    ]}
+    ]
+}
 
 
 def test_interpolation():
