@@ -16,6 +16,10 @@ class ModDMax(BaseMeasurement):
     pass
 
 
+class LogLog(BaseMeasurement):
+    pass
+
+
 class LactateThresholdResults(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -24,3 +28,4 @@ class LactateThresholdResults(BaseModel):
     ltp1: LactateTurningPoint | None = None
     ltp2: LactateTurningPoint | None = None
     mod_dmax: ModDMax | None = None
+    loglog: LogLog | None = None

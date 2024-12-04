@@ -25,10 +25,11 @@ def lactate_intensity_plot(x: LactateThresholdResults):
     sns.lineplot(x="intensity", y="lactate", data=x.interpolated_data)
 
     shapes = {
-            "ltp1": ("o", "red"),
-            "ltp2": ("s", "blue"),
-            "mod_dmax": ("D", "green")
-        }
+        "ltp1": ("o", "red"),
+        "ltp2": ("s", "blue"),
+        "mod_dmax": ("D", "green"),
+        "loglog": ("X", "orange"),
+    }
 
     for key, (shape, color) in shapes.items():
         r = getattr(x, key)
@@ -39,7 +40,7 @@ def lactate_intensity_plot(x: LactateThresholdResults):
                 color=color,
                 marker=shape,
                 label=key,
-                s=100  # size of the marker
+                s=100,  # size of the marker
             )
 
     plt.legend(title="Thresholds")
