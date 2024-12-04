@@ -15,4 +15,3 @@ class LactateThresholdResults(BaseModel):
     interpolated_data: pd.DataFrame
     ltp1: LactateThresholdPoint
     ltp2: LactateThresholdPoint
-
