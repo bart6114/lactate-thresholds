@@ -1,9 +1,17 @@
+import logging
+from typing import List
+
 import numpy as np
 import pandas as pd
 import pwlf
 import statsmodels.api as sm
+from numpy.polynomial.polynomial import Polynomial
+from scipy.optimize import curve_fit
 
-from lactate_thresholds.types import LactateThresholdPoint, LactateThresholdResults
+from lactate_thresholds.types import (
+    LactateTurningPoint,
+    ModDMax,
+)
 from lactate_thresholds.utils import retrieve_heart_rate
 
 
@@ -61,7 +69,7 @@ def interpolate(
 
 def determine_ltp(
     data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, n_breakpoints: int = 2
-) -> pd.DataFrame:
+) -> List[LactateTurningPoint]:
     # Extract intensity and lactate data
     X = data_interpolated["intensity"].values
     y = data_interpolated["lactate"].values
@@ -75,17 +83,67 @@ def determine_ltp(
     breakpoint_lactates = pwlf_model.predict(breakpoint_intensities)
     breakpoint_heartrates = retrieve_heart_rate(data_clean, breakpoint_intensities)
 
-    lt1 = LactateThresholdPoint(
+    lt1 = LactateTurningPoint(
         lactate=breakpoint_lactates[0],
         intensity=breakpoint_intensities[0],
         heart_rate=breakpoint_heartrates[0],
     )
-    lt2 = LactateThresholdPoint(
+    lt2 = LactateTurningPoint(
         lactate=breakpoint_lactates[1],
         intensity=breakpoint_intensities[1],
         heart_rate=breakpoint_heartrates[1],
     )
 
-    return LactateThresholdResults(
-        clean_data=data_clean, interpolated_data=data_interpolated, ltp1=lt1, ltp2=lt2
+    return [lt1, lt2]
+
+def determine_mod_dmax(data_clean: pd.DataFrame) -> ModDMax:
+    
+    if data_clean.empty or data_clean.iloc[0]['intensity'] == 0:
+        data_dmax = data_clean.iloc[1:].copy()
+    else:
+        data_dmax = data_clean.copy()
+
+    # Find the first rise in blood lactate greater than 0.4 mmol/L
+    data_dmax['diffs'] = data_dmax['lactate'].diff().shift(-1)
+    data_first_rise = data_dmax[data_dmax['diffs'] >= 0.4].head(1)
+
+    if data_first_rise.empty:
+        logging.warning("No first rise in blood lactate greater than 0.4 mmol/L found.")
+        return None
+
+
+    # Fit a 3rd degree polynomial
+    def poly3(x, a, b, c, d):
+        return a * x**3 + b * x**2 + c * x + d
+
+    popt, _ = curve_fit(poly3, data_clean['intensity'], data_clean['lactate'])
+
+    # Calculate the differences
+    diff_lactate = data_dmax['lactate'].max() - data_first_rise['lactate'].values[0]
+    diff_intensity = data_dmax['intensity'].max() - data_first_rise['intensity'].values[0]
+
+    lin_beta = diff_lactate / diff_intensity
+
+    # Find where the first derivative of the polynomial fit equals the slope of the line
+    p = Polynomial([popt[3], popt[2], popt[1], popt[0]])
+    dp = p.deriv()
+    roots = (dp - lin_beta).roots()
+    roots = roots[np.isreal(roots)].real
+    roots = roots[roots > 0]
+
+    max_intensity = data_dmax['intensity'].max()
+    model_intensity = roots[roots <= max_intensity].max()
+    model_lactate = poly3(model_intensity, *popt)
+
+    # Workaround for unplausible estimations
+    if model_lactate > 8:
+        logging.warning("Estimated lactate value via ModDMax is higher than 8 mmol/L. Returning None.")
+        return None
+        
+    return ModDMax(
+        lactate=model_lactate,
+        intensity=model_intensity,
+        heart_rate=retrieve_heart_rate(data_clean, [model_intensity])[0],
     )
+
+

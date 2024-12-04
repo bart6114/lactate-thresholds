@@ -6,35 +6,43 @@ from lactate_thresholds.types import LactateThresholdResults
 
 def lactate_intensity_plot(x: LactateThresholdResults):
     plt.figure(figsize=(10, 8))
-    sns.lineplot(x="intensity", y="lactate", data=x.interpolated_data)
-    ## add the LTPs
-    plt.axvline(x.ltp1.intensity, color="green", linestyle="--")
-    plt.axvline(x.ltp2.intensity, color="red", linestyle="--")
-    ## add info next to the LTP lines about hearrate, lactate and intensity
 
-    intensity_range = (
-        x.interpolated_data["intensity"].max() - x.interpolated_data["intensity"].min()
-    )
-    offset = intensity_range * 0.01  # Adjust this multiplier as needed
-
-    plt.text(
-        x.ltp1.intensity + offset,  # Dynamic offset for LT1
-        x.interpolated_data["lactate"].max(),
-        f"LT1\nint: {round(x.ltp1.intensity, 2)}\nlactate: {round(x.ltp1.lactate, 1)}\nhr: {int(x.ltp1.heart_rate)}",
-        verticalalignment="top",
-    )
-
-    plt.text(
-        x.ltp2.intensity + offset,  # Dynamic offset for LT2
-        x.interpolated_data["lactate"].max(),
-        f"LT2\nint: {round(x.ltp2.intensity, 2)}\nlactate: {round(x.ltp2.lactate, 1)}\nhr: {int(x.ltp2.heart_rate)}",
-        verticalalignment="top",
-    )
-
-    # plot the original measurements as black dots
     sns.scatterplot(
         x="intensity",
         y="lactate",
         data=x.clean_data[x.clean_data["intensity"] > 0],
         color="black",
     )
+
+    sns.lineplot(
+        x="intensity",
+        y="lactate",
+        data=x.clean_data[x.clean_data["intensity"] > 0],
+        color="black",
+        alpha=0.4,
+    )
+
+    sns.lineplot(x="intensity", y="lactate", data=x.interpolated_data)
+
+    shapes = {
+            "ltp1": ("o", "red"),
+            "ltp2": ("s", "blue"),
+            "mod_dmax": ("D", "green")
+        }
+
+    for key, (shape, color) in shapes.items():
+        r = getattr(x, key)
+        if r is not None:
+            plt.scatter(
+                r.intensity,
+                r.lactate,
+                color=color,
+                marker=shape,
+                label=key,
+                s=100  # size of the marker
+            )
+
+    plt.legend(title="Thresholds")
+    plt.xlabel("Intensity")
+    plt.ylabel("Lactate")
+    plt.title("Lactate Intensity Plot")

@@ -3,7 +3,7 @@ import pandas as pd
 import statsmodels.api as sm
 
 
-def retrieve_heart_rate(df_clean, intensity_values) -> np.array:
+def retrieve_heart_rate(df_clean: pd.DataFrame, intensity_values: np.array) -> np.array:
     df_clean = df_clean.iloc[1:]
 
     X = sm.add_constant(df_clean["intensity"])

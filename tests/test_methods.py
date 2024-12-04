@@ -28,3 +28,15 @@ def test_interpolation_watt_intensity(test_instances):
 def test_convenience_determine(test_instances):
     df = pd.DataFrame.from_dict(test_instances["cycling2"])
     determine(df, lactate_col="lactate_4")
+
+
+def test_moddmax(test_instances):
+    df = pd.DataFrame.from_dict(test_instances["cycling2"])
+    dfc = process.clean_data(df, lactate_col="lactate_8")
+    logging.info(model.determine_mod_dmax(dfc))
+
+def test_loglog(test_instances):
+    df = pd.DataFrame.from_dict(test_instances["cycling2"])
+    dfc = process.clean_data(df, lactate_col="lactate_8")
+    di = model.interpolate(dfc, include_baseline=False)
+    logging.info(model.determine_loglog(di))

@@ -1,6 +1,7 @@
 import pandas as pd
 
-from lactate_thresholds.model import determine_ltp, interpolate
+from lactate_thresholds.model import determine_ltp, determine_mod_dmax, interpolate
+from lactate_thresholds.types import LactateThresholdResults
 
 
 def clean_data(
@@ -51,4 +52,8 @@ def determine(
     )
     dfi = interpolate(dfc, include_baseline=include_baseline)
 
-    return determine_ltp(dfc, dfi)
+    res = LactateThresholdResults(clean_data=dfc, interpolated_data=dfi)
+    res.ltp1, res.ltp2 = determine_ltp(dfc, dfi)
+    res.mod_dmax = determine_mod_dmax(dfc)
+
+    return res
