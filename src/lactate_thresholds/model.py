@@ -13,7 +13,7 @@ from lactate_thresholds.types import (
     LogLog,
     ModDMax,
 )
-from lactate_thresholds.utils import retrieve_heart_rate
+from lactate_thresholds.utils import retrieve_heart_rate, retrieve_lactate_interpolated
 
 
 def interpolate(
@@ -85,12 +85,12 @@ def determine_ltp(
     breakpoint_heartrates = retrieve_heart_rate(data_clean, breakpoint_intensities)
 
     lt1 = LactateTurningPoint(
-        lactate=breakpoint_lactates[0],
+        lactate=retrieve_lactate_interpolated(data_interpolated, breakpoint_intensities[0]),
         intensity=breakpoint_intensities[0],
         heart_rate=breakpoint_heartrates[0],
     )
     lt2 = LactateTurningPoint(
-        lactate=breakpoint_lactates[1],
+        lactate=retrieve_lactate_interpolated(data_interpolated, breakpoint_intensities[1]),
         intensity=breakpoint_intensities[1],
         heart_rate=breakpoint_heartrates[1],
     )
@@ -98,7 +98,7 @@ def determine_ltp(
     return [lt1, lt2]
 
 
-def determine_mod_dmax(data_clean: pd.DataFrame) -> ModDMax:
+def determine_mod_dmax(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame) -> ModDMax:
     if data_clean.empty or data_clean.iloc[0]["intensity"] == 0:
         data_dmax = data_clean.iloc[1:].copy()
     else:
@@ -145,7 +145,7 @@ def determine_mod_dmax(data_clean: pd.DataFrame) -> ModDMax:
         return None
 
     return ModDMax(
-        lactate=model_lactate,
+        lactate=retrieve_lactate_interpolated(data_interpolated, model_intensity),
         intensity=model_intensity,
         heart_rate=retrieve_heart_rate(data_clean, [model_intensity])[0],
     )
@@ -165,9 +165,9 @@ def determine_loglog(data_clean, data_interpolated, loglog_restrainer=1):
     breakpoints = piecewise_fit.fit(2)  # 1 breakpoint means 2 segments
 
     loglog_intensity = np.exp(breakpoints[1])
-    loglog_lactate = np.exp(piecewise_fit.predict([np.log(loglog_intensity)])[0])
+    lactate_interpolated = retrieve_lactate_interpolated(data_interpolated, loglog_intensity)
     loglog_heart_rate = retrieve_heart_rate(data_clean, [loglog_intensity])[0]
 
     return LogLog(
-        lactate=loglog_lactate, intensity=loglog_intensity, heart_rate=loglog_heart_rate
+        lactate=lactate_interpolated, intensity=loglog_intensity, heart_rate=loglog_heart_rate
     )

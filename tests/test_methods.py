@@ -33,7 +33,8 @@ def test_convenience_determine(test_instances):
 def test_moddmax(test_instances):
     df = pd.DataFrame.from_dict(test_instances["cycling2"])
     dfc = process.clean_data(df, lactate_col="lactate_8")
-    logging.info(model.determine_mod_dmax(dfc))
+    dfi = model.interpolate(dfc, include_baseline=False)
+    logging.info(model.determine_mod_dmax(dfc, dfi ))
 
 
 def test_loglog(test_instances):

@@ -4,7 +4,7 @@ import pandas as pd
 from lactate_thresholds.types import LactateThresholdResults
 
 
-def lactate_intensity_plot_altair(x: LactateThresholdResults):
+def lactate_intensity_plot(x: LactateThresholdResults):
     clean_data = x.clean_data[x.clean_data["intensity"] > 0]
     interpolated_data = x.interpolated_data
 
@@ -84,17 +84,15 @@ def lactate_intensity_plot_altair(x: LactateThresholdResults):
     )
 
     # Add interactive selection tied to interpolated data
-    nearest = alt.selection(
-        type="single", nearest=True, on="mouseover", fields=["intensity"], empty="none"
-    )
+    nearest = alt.selection_point(nearest=True, on="mouseover", fields=["intensity"], empty=False)
 
     selectors = (
         alt.Chart(interpolated_data)
         .mark_point()
         .encode(x="intensity:Q", opacity=alt.value(0))
-        .add_selection(nearest)
+        .add_params(nearest)
     )
-
+        
     points = (
         alt.Chart(interpolated_data)
         .mark_point(size=50, color="red")

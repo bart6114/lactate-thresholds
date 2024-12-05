@@ -61,7 +61,7 @@ def determine(
 
     res = LactateThresholdResults(clean_data=dfc, interpolated_data=dfi)
     res.ltp1, res.ltp2 = determine_ltp(dfc, dfi)
-    res.mod_dmax = determine_mod_dmax(dfc)
+    res.mod_dmax = determine_mod_dmax(dfc, dfi)
     res.loglog = determine_loglog(dfc, dfi)
 
     return res
