@@ -15,7 +15,6 @@ dependencies = [
     "pydantic>=2.10.3",
     "ruptures>=1.1.9",
     "scikit-learn>=1.5.2",
-    "seaborn>=0.13.2",
     "statsmodels>=0.14.4",
 ]
 

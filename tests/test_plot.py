@@ -2,7 +2,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from lactate_thresholds import determine
-from lactate_thresholds.plot import lactate_intensity_plot, lactate_intensity_plot_altair
+from lactate_thresholds.plot import (
+    lactate_intensity_plot,
+    lactate_intensity_plot_altair,
+)
 
 
 def test_lactate_intensity_plot(test_instances, test_output_dir):
