@@ -16,3 +16,8 @@ def retrieve_heart_rate(df_clean: pd.DataFrame, intensity_values: np.array) -> n
 def retrieve_lactate_interpolated(df_interpolated: pd.DataFrame, intensity: float) -> float:
     closest_intensity = df_interpolated.iloc[(df_interpolated["intensity"] - intensity).abs().argsort()[:1]]
     return closest_intensity["lactate"].values[0]
+
+
+def retrieve_intensity_interpolated(df_interpolated: pd.DataFrame, lactate: float) -> float:
+    closest_lactate = df_interpolated.iloc[(df_interpolated["lactate"] - lactate).abs().argsort()[:1]]
+    return closest_lactate["intensity"].values[0]

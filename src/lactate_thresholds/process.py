@@ -2,7 +2,8 @@ import logging
 
 import pandas as pd
 
-from lactate_thresholds.model import (
+from lactate_thresholds.methods import (
+    determine_baseline,
     determine_loglog,
     determine_ltp,
     determine_mod_dmax,
@@ -63,5 +64,6 @@ def determine(
     res.ltp1, res.ltp2 = determine_ltp(dfc, dfi)
     res.mod_dmax = determine_mod_dmax(dfc, dfi)
     res.loglog = determine_loglog(dfc, dfi)
+    res.baseline = determine_baseline(dfc, dfi, 0)
 
     return res

@@ -12,8 +12,9 @@ from lactate_thresholds.types import (
     LactateTurningPoint,
     LogLog,
     ModDMax,
+    BaseLinePlus,
 )
-from lactate_thresholds.utils import retrieve_heart_rate, retrieve_lactate_interpolated
+from lactate_thresholds.utils import retrieve_heart_rate, retrieve_intensity_interpolated, retrieve_lactate_interpolated
 
 
 def interpolate(
@@ -151,7 +152,7 @@ def determine_mod_dmax(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame
     )
 
 
-def determine_loglog(data_clean, data_interpolated, loglog_restrainer=1):
+def determine_loglog(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, loglog_restrainer=1):
     data_filtered = data_interpolated[data_interpolated["intensity"] > 0].copy()
     data_filtered["intensity"] = np.log(data_filtered["intensity"])
     data_filtered["lactate"] = np.log(data_filtered["lactate"])
@@ -170,4 +171,23 @@ def determine_loglog(data_clean, data_interpolated, loglog_restrainer=1):
 
     return LogLog(
         lactate=lactate_interpolated, intensity=loglog_intensity, heart_rate=loglog_heart_rate
+    )
+
+
+def determine_baseline(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, plus: float = .5, perc_initial_values: float = .1) -> pd.DataFrame:
+    
+    baseline_window = int(len(data_interpolated) * perc_initial_values)
+    bsln = data_interpolated['lactate'].iloc[:baseline_window].mean()
+    bsln_plus = bsln + plus
+
+
+    if bsln_plus > data_interpolated['lactate'].max() or bsln_plus < data_interpolated['lactate'].min():
+        logging.warning(f"Baseline + {plus} is out of range.")
+        return None
+
+    bsln_plus_intensity = retrieve_intensity_interpolated(data_interpolated, bsln_plus)
+    return BaseLinePlus(
+        lactate=bsln_plus,
+        intensity=bsln_plus_intensity,
+        heart_rate=retrieve_heart_rate(data_clean, [bsln_plus_intensity])
     )

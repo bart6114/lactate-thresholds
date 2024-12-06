@@ -125,11 +125,19 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         )
     )
 
+    vertical_dotted_line = (
+        alt.Chart(pd.DataFrame({"lactate": [x.baseline.lactate]}))
+        .mark_rule(strokeDash=[5, 5], color="purple")
+        .encode(y=alt.Y("lactate:Q"))
+        .properties(width=800, height=600)
+    )
+
     # Combine all layers
     chart = alt.layer(
         scatter,
         line_measurement,
         interpolated_line,
+        vertical_dotted_line,
         thresholds,
         selectors,
         points,
