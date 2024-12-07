@@ -49,3 +49,11 @@ def test_baseline_plus(test_instances):
     dfc = process.clean_data(df, lactate_col="lactate_8")
     di = methods.interpolate(dfc, include_baseline=False)
     logging.info(methods.determine_baseline(dfc, di, 0.5))
+
+
+def test_obla(test_instances):
+    df = pd.DataFrame.from_dict(test_instances["cycling2"])
+    dfc = process.clean_data(df, lactate_col="lactate_8")
+    di = methods.interpolate(dfc, include_baseline=False)
+    logging.info(methods.determine_obla(di, 4.0))
+    logging.info(methods.determine_obla(di, 2.0))

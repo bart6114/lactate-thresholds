@@ -42,6 +42,8 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         "ltp2": ("square", "#4682B4"),  # steelblue
         "mod_dmax": ("diamond", "#32CD32"),  # limegreen
         "loglog": ("cross", "#FFA500"),  # orange
+        "obla_2": ("triangle-up", "#8A2BE2"),  # blueviolet
+        "obla_4": ("triangle-down", "#8A2BE2"),  # blueviolet
     }
 
     for key, (shape, color) in shapes.items():
@@ -61,7 +63,7 @@ def lactate_intensity_plot(x: LactateThresholdResults):
 
     thresholds = (
         alt.Chart(threshold_df)
-        .mark_point(size=100)
+        .mark_point(size=150, filled=True, strokeOpacity=1, fillOpacity=1)
         .encode(
             x="intensity:Q",
             y="lactate:Q",
@@ -79,7 +81,6 @@ def lactate_intensity_plot(x: LactateThresholdResults):
                     range=[shapes[key][1] for key in shapes.keys()],
                 ),
             ),
-            tooltip=["threshold", "intensity", "lactate"],
         )
     )
 
@@ -122,7 +123,6 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         .properties(width=800, height=600)
     )
 
-    # Combine all layers
     chart = (
         alt.layer(
             points_orig,

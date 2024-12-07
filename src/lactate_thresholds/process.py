@@ -7,6 +7,7 @@ from lactate_thresholds.methods import (
     determine_loglog,
     determine_ltp,
     determine_mod_dmax,
+    determine_obla,
     interpolate,
 )
 from lactate_thresholds.types import LactateThresholdResults
@@ -64,6 +65,8 @@ def determine(
     res.ltp1, res.ltp2 = determine_ltp(dfc, dfi)
     res.mod_dmax = determine_mod_dmax(dfc, dfi)
     res.loglog = determine_loglog(dfc, dfi)
+    res.obla_2 = determine_obla(dfi, 2)
+    res.obla_4 = determine_obla(dfi, 4)
     res.baseline = determine_baseline(dfc, dfi, 0)
 
     return res

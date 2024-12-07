@@ -99,6 +99,13 @@ def data_placeholder() -> pd.DataFrame:
 
 
 def main():
+    st.set_page_config(
+        page_title="Lactate Thresholds",
+        page_icon="🌟",
+        layout="centered",
+        initial_sidebar_state="auto",
+    )
+
     st.title("Lactate Thresholds")
 
     df = data_placeholder()

@@ -9,6 +9,7 @@ from numpy.polynomial.polynomial import Polynomial
 from scipy.optimize import curve_fit
 
 from lactate_thresholds.types import (
+    OBLA,
     BaseLinePlus,
     LactateTurningPoint,
     LogLog,
@@ -222,4 +223,14 @@ def determine_baseline(
         heart_rate=retrieve_heart_rate_interpolated(
             data_interpolated, bsln_plus_intensity
         ),
+        plus=plus,
+    )
+
+
+def determine_obla(data_interpolated: pd.DataFrame, obla_lactate: float) -> OBLA:
+    obla_intensity = retrieve_intensity_interpolated(data_interpolated, obla_lactate)
+    return OBLA(
+        lactate=obla_lactate,
+        intensity=obla_intensity,
+        heart_rate=retrieve_heart_rate_interpolated(data_interpolated, obla_intensity),
     )

@@ -21,6 +21,10 @@ class LogLog(BaseMeasurement):
 
 
 class BaseLinePlus(BaseMeasurement):
+    plus: float
+
+
+class OBLA(BaseMeasurement):
     pass
 
 
@@ -34,3 +38,5 @@ class LactateThresholdResults(BaseModel):
     mod_dmax: ModDMax | None = None
     loglog: LogLog | None = None
     baseline: BaseLinePlus | None = None
+    obla_2: OBLA | None = None
+    obla_4: OBLA | None = None
