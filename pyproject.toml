@@ -16,10 +16,11 @@ dependencies = [
     "ruptures>=1.1.9",
     "scikit-learn>=1.5.2",
     "statsmodels>=0.14.4",
+    "streamlit>=1.40.2",
 ]
 
 [project.scripts]
-lactate-thresholds = "lactate_thresholds:main"
+lt_app = "lactate_thresholds:app.start"
 
 [build-system]
 requires = ["hatchling"]

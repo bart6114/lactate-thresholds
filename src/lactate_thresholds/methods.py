@@ -9,12 +9,16 @@ from numpy.polynomial.polynomial import Polynomial
 from scipy.optimize import curve_fit
 
 from lactate_thresholds.types import (
+    BaseLinePlus,
     LactateTurningPoint,
     LogLog,
     ModDMax,
-    BaseLinePlus,
 )
-from lactate_thresholds.utils import retrieve_heart_rate, retrieve_intensity_interpolated, retrieve_lactate_interpolated
+from lactate_thresholds.utils import (
+    retrieve_heart_rate,
+    retrieve_intensity_interpolated,
+    retrieve_lactate_interpolated,
+)
 
 
 def interpolate(
@@ -86,12 +90,16 @@ def determine_ltp(
     breakpoint_heartrates = retrieve_heart_rate(data_clean, breakpoint_intensities)
 
     lt1 = LactateTurningPoint(
-        lactate=retrieve_lactate_interpolated(data_interpolated, breakpoint_intensities[0]),
+        lactate=retrieve_lactate_interpolated(
+            data_interpolated, breakpoint_intensities[0]
+        ),
         intensity=breakpoint_intensities[0],
         heart_rate=breakpoint_heartrates[0],
     )
     lt2 = LactateTurningPoint(
-        lactate=retrieve_lactate_interpolated(data_interpolated, breakpoint_intensities[1]),
+        lactate=retrieve_lactate_interpolated(
+            data_interpolated, breakpoint_intensities[1]
+        ),
         intensity=breakpoint_intensities[1],
         heart_rate=breakpoint_heartrates[1],
     )
@@ -99,7 +107,9 @@ def determine_ltp(
     return [lt1, lt2]
 
 
-def determine_mod_dmax(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame) -> ModDMax:
+def determine_mod_dmax(
+    data_clean: pd.DataFrame, data_interpolated: pd.DataFrame
+) -> ModDMax:
     if data_clean.empty or data_clean.iloc[0]["intensity"] == 0:
         data_dmax = data_clean.iloc[1:].copy()
     else:
@@ -152,7 +162,9 @@ def determine_mod_dmax(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame
     )
 
 
-def determine_loglog(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, loglog_restrainer=1):
+def determine_loglog(
+    data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, loglog_restrainer=1
+):
     data_filtered = data_interpolated[data_interpolated["intensity"] > 0].copy()
     data_filtered["intensity"] = np.log(data_filtered["intensity"])
     data_filtered["lactate"] = np.log(data_filtered["lactate"])
@@ -166,22 +178,32 @@ def determine_loglog(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, 
     breakpoints = piecewise_fit.fit(2)  # 1 breakpoint means 2 segments
 
     loglog_intensity = np.exp(breakpoints[1])
-    lactate_interpolated = retrieve_lactate_interpolated(data_interpolated, loglog_intensity)
+    lactate_interpolated = retrieve_lactate_interpolated(
+        data_interpolated, loglog_intensity
+    )
     loglog_heart_rate = retrieve_heart_rate(data_clean, [loglog_intensity])[0]
 
     return LogLog(
-        lactate=lactate_interpolated, intensity=loglog_intensity, heart_rate=loglog_heart_rate
+        lactate=lactate_interpolated,
+        intensity=loglog_intensity,
+        heart_rate=loglog_heart_rate,
     )
 
 
-def determine_baseline(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, plus: float = .5, perc_initial_values: float = .1) -> pd.DataFrame:
-    
+def determine_baseline(
+    data_clean: pd.DataFrame,
+    data_interpolated: pd.DataFrame,
+    plus: float = 0.5,
+    perc_initial_values: float = 0.2,
+) -> pd.DataFrame:
     baseline_window = int(len(data_interpolated) * perc_initial_values)
-    bsln = data_interpolated['lactate'].iloc[:baseline_window].mean()
+    bsln = data_interpolated["lactate"].iloc[:baseline_window].mean()
     bsln_plus = bsln + plus
 
-
-    if bsln_plus > data_interpolated['lactate'].max() or bsln_plus < data_interpolated['lactate'].min():
+    if (
+        bsln_plus > data_interpolated["lactate"].max()
+        or bsln_plus < data_interpolated["lactate"].min()
+    ):
         logging.warning(f"Baseline + {plus} is out of range.")
         return None
 
@@ -189,5 +211,5 @@ def determine_baseline(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame
     return BaseLinePlus(
         lactate=bsln_plus,
         intensity=bsln_plus_intensity,
-        heart_rate=retrieve_heart_rate(data_clean, [bsln_plus_intensity])
+        heart_rate=retrieve_heart_rate(data_clean, [bsln_plus_intensity]),
     )

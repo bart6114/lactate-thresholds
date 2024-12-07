@@ -19,6 +19,7 @@ class ModDMax(BaseMeasurement):
 class LogLog(BaseMeasurement):
     pass
 
+
 class BaseLinePlus(BaseMeasurement):
     pass
 
@@ -33,4 +34,3 @@ class LactateThresholdResults(BaseModel):
     mod_dmax: ModDMax | None = None
     loglog: LogLog | None = None
     baseline: BaseLinePlus | None = None
-    

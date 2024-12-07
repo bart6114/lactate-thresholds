@@ -84,7 +84,9 @@ def lactate_intensity_plot(x: LactateThresholdResults):
     )
 
     # Add interactive selection tied to interpolated data
-    nearest = alt.selection_point(nearest=True, on="mouseover", fields=["intensity"], empty=False)
+    nearest = alt.selection_point(
+        nearest=True, on="mouseover", fields=["intensity"], empty=False
+    )
 
     selectors = (
         alt.Chart(interpolated_data)
@@ -92,7 +94,7 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         .encode(x="intensity:Q", opacity=alt.value(0))
         .add_params(nearest)
     )
-        
+
     points = (
         alt.Chart(interpolated_data)
         .mark_point(size=50, color="red")
