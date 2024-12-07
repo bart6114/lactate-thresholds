@@ -16,6 +16,7 @@ from lactate_thresholds.types import (
 )
 from lactate_thresholds.utils import (
     retrieve_heart_rate,
+    retrieve_heart_rate_interpolated,
     retrieve_intensity_interpolated,
     retrieve_lactate_interpolated,
 )
@@ -24,17 +25,6 @@ from lactate_thresholds.utils import (
 def interpolate(
     df: pd.DataFrame, interpolation_factor: float = 0.1, include_baseline: bool = True
 ) -> pd.DataFrame:
-    """
-    Interpolates a new dataset using a 3rd-degree polynomial regression model (statsmodels).
-
-    Parameters:
-    df (pd.DataFrame): The input dataframe with columns 'intensity' and 'lactate'.
-    interpolation_factor (float): The step size for interpolation. Default is 0.1.
-    include_baseline (bool): Whether to include the baseline value.
-
-    Returns:
-    pd.DataFrame: The interpolated dataframe with new intensity and lactate values.
-    """
     # Adjust baseline intensity
     if include_baseline and (df["intensity"] == 0).any():
         to_subtract = df.iloc[2]["intensity"] - df.iloc[1]["intensity"]
@@ -49,26 +39,40 @@ def interpolate(
     # Sort the dataframe by intensity
     df = df.sort_values(by="intensity").reset_index(drop=True)
 
-    # Create polynomial features manually
-    X = np.column_stack([df["intensity"] ** i for i in range(1, 4)])  # 3rd degree
-    y = df["lactate"]
+    def fit_and_predict(column):
+        # Create polynomial features manually
+        X = np.column_stack([df["intensity"] ** i for i in range(1, 4)])  # 3rd degree
+        y = df[column]
 
-    # Fit the statsmodels OLS model
-    X = sm.add_constant(X)  # Add intercept term
-    model = sm.OLS(y, X).fit()
+        # Fit the statsmodels OLS model
+        X = sm.add_constant(X)  # Add intercept term
+        model = sm.OLS(y, X).fit()
 
-    # Generate new intensity values for interpolation
-    new_intensity = np.arange(
-        df["intensity"].min(), df["intensity"].max(), interpolation_factor
-    )
-    new_X = np.column_stack([new_intensity**i for i in range(1, 4)])
-    new_X = sm.add_constant(new_X)  # Add intercept term for prediction
+        # Generate new intensity values for interpolation
+        new_intensity = np.arange(
+            df["intensity"].min(), df["intensity"].max(), interpolation_factor
+        )
+        new_X = np.column_stack([new_intensity**i for i in range(1, 4)])
+        new_X = sm.add_constant(new_X)  # Add intercept term for prediction
 
-    # Predict lactate values for the new intensity data
-    new_lactate = model.predict(new_X)
+        # Predict values for the new intensity data
+        new_values = model.predict(new_X)
+        return new_intensity, new_values
+
+    # Interpolate lactate
+    new_intensity, new_lactate = fit_and_predict("lactate")
+
+    # Interpolate heartrate
+    _, new_heartrate = fit_and_predict("heart_rate")
 
     # Combine interpolated values into a new DataFrame
-    interpolated_df = pd.DataFrame({"intensity": new_intensity, "lactate": new_lactate})
+    interpolated_df = pd.DataFrame(
+        {
+            "intensity": new_intensity,
+            "lactate": new_lactate,
+            "heart_rate": new_heartrate,
+        }
+    )
 
     return interpolated_df
 
@@ -86,22 +90,24 @@ def determine_ltp(
 
     # Get breakpoint intensities and corresponding lactate values
     breakpoint_intensities = breakpoints[1:-1]  # Ignore first and last points
-    breakpoint_lactates = pwlf_model.predict(breakpoint_intensities)
-    breakpoint_heartrates = retrieve_heart_rate(data_clean, breakpoint_intensities)
 
     lt1 = LactateTurningPoint(
         lactate=retrieve_lactate_interpolated(
             data_interpolated, breakpoint_intensities[0]
         ),
         intensity=breakpoint_intensities[0],
-        heart_rate=breakpoint_heartrates[0],
+        heart_rate=retrieve_heart_rate_interpolated(
+            data_interpolated, breakpoint_intensities[0]
+        ),
     )
     lt2 = LactateTurningPoint(
         lactate=retrieve_lactate_interpolated(
             data_interpolated, breakpoint_intensities[1]
         ),
         intensity=breakpoint_intensities[1],
-        heart_rate=breakpoint_heartrates[1],
+        heart_rate=retrieve_heart_rate_interpolated(
+            data_interpolated, breakpoint_intensities[1]
+        ),
     )
 
     return [lt1, lt2]
@@ -181,7 +187,9 @@ def determine_loglog(
     lactate_interpolated = retrieve_lactate_interpolated(
         data_interpolated, loglog_intensity
     )
-    loglog_heart_rate = retrieve_heart_rate(data_clean, [loglog_intensity])[0]
+    loglog_heart_rate = retrieve_heart_rate_interpolated(
+        data_interpolated, loglog_intensity
+    )
 
     return LogLog(
         lactate=lactate_interpolated,
@@ -211,5 +219,7 @@ def determine_baseline(
     return BaseLinePlus(
         lactate=bsln_plus,
         intensity=bsln_plus_intensity,
-        heart_rate=retrieve_heart_rate(data_clean, [bsln_plus_intensity]),
+        heart_rate=retrieve_heart_rate_interpolated(
+            data_interpolated, bsln_plus_intensity
+        ),
     )

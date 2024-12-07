@@ -26,12 +26,12 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         .properties(width=800, height=600)
     )
 
-    scatter = base.mark_point(color="black", opacity=0.1).properties(
+    points_orig = base.mark_point(color="grey", opacity=0.3).properties(
         title="Lactate Intensity Plot"
     )
-    line_measurement = base.mark_line(color="black", opacity=0.1)
+    line_orig = base.mark_line(color="grey", opacity=0.3)
 
-    interpolated_line = (
+    line_interpolated = (
         alt.Chart(interpolated_data).mark_line().encode(x="intensity:Q", y="lactate:Q")
     )
 
@@ -105,18 +105,6 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         )
     )
 
-    text = (
-        alt.Chart(interpolated_data)
-        .mark_text(align="left", dx=5, dy=-5)
-        .encode(
-            x="intensity:Q",
-            y="lactate:Q",
-            text=alt.condition(
-                nearest, alt.Text("lactate:Q", format=".2f"), alt.value("")
-            ),
-        )
-    )
-
     rules = (
         alt.Chart(interpolated_data)
         .mark_rule(color="gray")
@@ -135,16 +123,25 @@ def lactate_intensity_plot(x: LactateThresholdResults):
     )
 
     # Combine all layers
-    chart = alt.layer(
-        scatter,
-        line_measurement,
-        interpolated_line,
-        vertical_dotted_line,
-        thresholds,
-        selectors,
-        points,
-        text,
-        rules,
-    ).interactive()
+    chart = (
+        alt.layer(
+            points_orig,
+            line_orig,
+            line_interpolated,
+            vertical_dotted_line,
+            thresholds,
+            selectors,
+            points,
+            rules,
+        )
+        .interactive()
+        .encode(
+            tooltip=[
+                alt.Tooltip("intensity:Q", format=".1f"),
+                alt.Tooltip("lactate:Q", format=".1f"),
+                alt.Tooltip("heart_rate:Q", format=".0f"),
+            ]
+        )
+    )
 
     return chart
