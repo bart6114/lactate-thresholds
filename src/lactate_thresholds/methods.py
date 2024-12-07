@@ -14,6 +14,7 @@ from lactate_thresholds.types import (
     LactateTurningPoint,
     LogLog,
     ModDMax,
+    ThresholdEstimate,
 )
 from lactate_thresholds.utils import (
     retrieve_heart_rate,
@@ -234,3 +235,12 @@ def determine_obla(data_interpolated: pd.DataFrame, obla_lactate: float) -> OBLA
         intensity=obla_intensity,
         heart_rate=retrieve_heart_rate_interpolated(data_interpolated, obla_intensity),
     )
+
+def determine_threshold_estimate(data_interpolated: pd.DataFrame, *args) -> ThresholdEstimate:
+    intensity = np.mean([arg.intensity for arg in args])
+    return ThresholdEstimate(
+        intensity=intensity,
+        lactate=retrieve_lactate_interpolated(data_interpolated, intensity),
+        heart_rate=retrieve_heart_rate_interpolated(data_interpolated, intensity),
+    )
+        

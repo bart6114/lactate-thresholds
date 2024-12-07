@@ -44,6 +44,8 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         "loglog": ("cross", "#FFA500"),  # orange
         "obla_2": ("triangle-up", "#8A2BE2"),  # blueviolet
         "obla_4": ("triangle-down", "#8A2BE2"),  # blueviolet
+        "lt1_estimate": ("M0,.5L.6,.8L.5,.1L1,-.3L.3,-.4L0,-1L-.3,-.4L-1,-.3L-.5,.1L-.6,.8L0,.5Z", "#FFD700"),  # gold
+        "lt2_estimate": ("M0,.5L.6,.8L.5,.1L1,-.3L.3,-.4L0,-1L-.3,-.4L-1,-.3L-.5,.1L-.6,.8L0,.5Z", "#FFD700"),  # gold
     }
 
     for key, (shape, color) in shapes.items():

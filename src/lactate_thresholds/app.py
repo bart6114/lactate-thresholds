@@ -111,9 +111,26 @@ def main():
     df = data_placeholder()
     edited_df = st.data_editor(df, num_rows="dynamic")
 
-    ld = lt.determine(edited_df)
-    lt.lactate_intensity_plot(ld)
-    st.altair_chart(lt.plot.lactate_intensity_plot(ld), use_container_width=True)
+    results = lt.determine(edited_df)
+    lt.lactate_intensity_plot(results)
+    st.altair_chart(lt.plot.lactate_intensity_plot(results), use_container_width=True)
+
+    lt_df = pd.DataFrame([results.lt1_estimate.model_dump(), results.lt2_estimate.model_dump()])
+    lt_df.insert(0, "Threshold", ["LT1", "LT2"])
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.number_input("Set LT1 intensity (defaults to estimated value)", value=lt_df.loc[0, "intensity"])
+    with col2:
+        st.number_input("Set LT2 intensity (defaults to estimated value)", value=lt_df.loc[1, "intensity"])
+
+    # TODO: update df when new values are set
+    # TODO: calc zones based on new values
+    
+
+    st.table(lt_df.set_index("Threshold"))
+
+    
 
 
 def start():

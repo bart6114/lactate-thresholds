@@ -27,6 +27,9 @@ class BaseLinePlus(BaseMeasurement):
 class OBLA(BaseMeasurement):
     pass
 
+class ThresholdEstimate(BaseMeasurement):
+    pass
+
 
 class LactateThresholdResults(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -40,3 +43,5 @@ class LactateThresholdResults(BaseModel):
     baseline: BaseLinePlus | None = None
     obla_2: OBLA | None = None
     obla_4: OBLA | None = None
+    lt1_estimate: ThresholdEstimate | None = None
+    lt2_estimate: ThresholdEstimate | None = None
