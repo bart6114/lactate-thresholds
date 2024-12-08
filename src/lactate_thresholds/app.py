@@ -139,11 +139,11 @@ def main():
 
         col1, col2 = st.columns(2)
         with col1:
-            st.number_input("lt1", value=st.session_state.lt_df.loc[0, "intensity"], on_change=update_lt, key="lt1_setting")
+            st.number_input("LT1", value=st.session_state.lt_df.loc[0, "intensity"], on_change=update_lt, key="lt1_setting")
         with col2:
-            st.number_input("lt2", value=st.session_state.lt_df.loc[1, "intensity"], on_change=update_lt, key="lt2_setting")
+            st.number_input("LT2", value=st.session_state.lt_df.loc[1, "intensity"], on_change=update_lt, key="lt2_setting")
 
-        st.write(st.session_state.lt_df)
+        st.write(st.session_state.lt_df.set_index("Threshold"))
     # TODO: update df when new values are set
     # TODO: calc zones based on new values
     
