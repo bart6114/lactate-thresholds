@@ -4,7 +4,7 @@ import pandas as pd
 from lactate_thresholds.types import LactateThresholdResults
 
 
-def lactate_intensity_plot(x: LactateThresholdResults):
+def lactate_intensity_plot(x: LactateThresholdResults, show_fit_line: bool = True):
     clean_data = x.clean_data[x.clean_data["intensity"] > 0]
     interpolated_data = x.interpolated_data
 
@@ -31,9 +31,12 @@ def lactate_intensity_plot(x: LactateThresholdResults):
     )
     line_orig = base.mark_line(color="grey", opacity=0.3)
 
-    line_interpolated = (
-        alt.Chart(interpolated_data).mark_line().encode(x="intensity:Q", y="lactate:Q")
-    )
+    if show_fit_line:
+        line_interpolated = (
+            alt.Chart(interpolated_data)
+            .mark_line()
+            .encode(x="intensity:Q", y="lactate:Q")
+        )
 
     # Add thresholds with shapes and colors
     threshold_data = []
@@ -131,17 +134,21 @@ def lactate_intensity_plot(x: LactateThresholdResults):
         .properties(width=800, height=600)
     )
 
+    layers = [
+        points_orig,
+        line_orig,
+        vertical_dotted_line,
+        thresholds,
+        selectors,
+        points,
+        rules,
+    ]
+
+    if show_fit_line:
+        layers.append(line_interpolated)
+
     chart = (
-        alt.layer(
-            points_orig,
-            line_orig,
-            line_interpolated,
-            vertical_dotted_line,
-            thresholds,
-            selectors,
-            points,
-            rules,
-        )
+        alt.layer(*layers)
         .interactive()
         .encode(
             tooltip=[

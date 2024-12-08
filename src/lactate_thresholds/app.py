@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 
 import lactate_thresholds as lt
+import lactate_thresholds.zones as zones
 
 
 def data_placeholder() -> pd.DataFrame:
@@ -120,20 +121,37 @@ def main():
         lt_df.insert(0, "Threshold", ["LT1", "LT2"])
         st.session_state.lt_df = lt_df
 
-    if not "lt_df" in st.session_state:
-        construct_lt_df()
+    def construct_zones_df():
+        if st.session_state.zone_type == "Seiler 3-zone":
+            zones_df = zones.seiler_3_zones(results.lt1_estimate, results.lt2_estimate)
+
+        elif st.session_state.zone_type == "Seiler 5-zone":
+            zones_df = zones.seiler_5_zones(results.lt1_estimate, results.lt2_estimate)
+
+        else:
+            zones_df = pd.DataFrame()
+
+        st.session_state.zones_df = zones_df
 
     def update_lt():
         results.calc_lt1_lt2_estimates(
             lt1=st.session_state.lt1_setting, lt2=st.session_state.lt2_setting
         )
         construct_lt_df()
+        construct_zones_df()
 
     hcol1, hcol2 = st.columns([0.7, 0.3])
     with hcol1:
+        st.checkbox("Show fit line", key="fit_line", value=True)
         st.altair_chart(
-            lt.plot.lactate_intensity_plot(results), use_container_width=True
+            lt.plot.lactate_intensity_plot(
+                results, show_fit_line=st.session_state.fit_line
+            ),
+            use_container_width=True,
         )
+
+    if not "lt_df" in st.session_state:
+        construct_lt_df()
 
     with hcol2:
         st.markdown("**Set LT1 and LT2 intensity values**")
@@ -155,11 +173,21 @@ def main():
                 key="lt2_setting",
             )
 
-        st.dataframe(
-            st.session_state.lt_df.set_index("Threshold"), use_container_width=True
+        st.dataframe(st.session_state.lt_df, hide_index=True, use_container_width=True)
+
+        st.selectbox(
+            "Select zones type",
+            ["Seiler 3-zone", "Seiler 5-zone"],
+            key="zone_type",
+            on_change=construct_zones_df,
         )
-    # TODO: update df when new values are set
-    # TODO: calc zones based on new values
+
+        if not "zones_df" in st.session_state:
+            construct_zones_df()
+
+        st.dataframe(
+            st.session_state.zones_df, hide_index=True, use_container_width=True
+        )
 
 
 def start():
