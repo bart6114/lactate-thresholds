@@ -102,7 +102,7 @@ def main():
     st.set_page_config(
         page_title="Lactate Thresholds",
         page_icon="🌟",
-        layout="centered",
+        layout="wide",
         initial_sidebar_state="auto",
     )
 
@@ -112,23 +112,43 @@ def main():
     edited_df = st.data_editor(df, num_rows="dynamic")
 
     results = lt.determine(edited_df)
-    lt.lactate_intensity_plot(results)
-    st.altair_chart(lt.plot.lactate_intensity_plot(results), use_container_width=True)
 
-    lt_df = pd.DataFrame([results.lt1_estimate.model_dump(), results.lt2_estimate.model_dump()])
-    lt_df.insert(0, "Threshold", ["LT1", "LT2"])
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.number_input("Set LT1 intensity (defaults to estimated value)", value=lt_df.loc[0, "intensity"])
-    with col2:
-        st.number_input("Set LT2 intensity (defaults to estimated value)", value=lt_df.loc[1, "intensity"])
+    if not 'lt_df' in st.session_state:
+        lt_df = pd.DataFrame([results.lt1_estimate.model_dump(), results.lt2_estimate.model_dump()])
+        lt_df.insert(0, "Threshold", ["LT1", "LT2"])
+        st.session_state.lt_df = lt_df
+    
+    def update_lt():
+        results.lt1_estimate.intensity = st.session_state.lt1_setting
+        results.lt2_estimate.intensity = st.session_state.lt2_setting
 
+        st.session_state.lt_df.loc[0, "intensity"] = st.session_state.lt1_setting
+        st.session_state.lt_df.loc[1, "intensity"] = st.session_state.lt2_setting
+
+
+
+
+    hcol1, hcol2 = st.columns([.7,.3])
+    with hcol1:
+        st.altair_chart(lt.plot.lactate_intensity_plot(results), use_container_width=True)
+
+    with hcol2:
+        st.markdown("**Set LT1 and LT2 intensity values**")
+        st.markdown(":gray[Defaults to estimated values]")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.number_input("lt1", value=st.session_state.lt_df.loc[0, "intensity"], on_change=update_lt, key="lt1_setting")
+        with col2:
+            st.number_input("lt2", value=st.session_state.lt_df.loc[1, "intensity"], on_change=update_lt, key="lt2_setting")
+
+        st.write(st.session_state.lt_df)
     # TODO: update df when new values are set
     # TODO: calc zones based on new values
     
 
-    st.table(lt_df.set_index("Threshold"))
+    
 
     
 
