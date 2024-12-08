@@ -1,7 +1,7 @@
 import logging
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from lactate_thresholds.methods import (
     determine_baseline,
@@ -12,8 +12,7 @@ from lactate_thresholds.methods import (
     determine_threshold_estimate,
     interpolate,
 )
-
-from lactate_thresholds.types import (LactateThresholdResults, ThresholdEstimate)
+from lactate_thresholds.types import LactateThresholdResults, ThresholdEstimate
 
 
 def clean_data(
@@ -58,7 +57,7 @@ def determine(
     lactate_col: str = "lactate",
     heart_rate_col: str = "heart_rate",
     include_baseline=False,
-) -> pd.DataFrame:
+) -> LactateThresholdResults:
     dfc = clean_data(
         df, step_col, length_col, intensity_col, lactate_col, heart_rate_col
     )
@@ -71,7 +70,6 @@ def determine(
     res.obla_2 = determine_obla(dfi, 2)
     res.obla_4 = determine_obla(dfi, 4)
     res.baseline = determine_baseline(dfc, dfi, 0)
-    res.lt1_estimate = determine_threshold_estimate(dfi, res.ltp1, res.loglog)
-    res.lt2_estimate = determine_threshold_estimate(dfi, res.ltp2, res.mod_dmax)
+    res.calc_lt1_lt2_estimates()
 
     return res

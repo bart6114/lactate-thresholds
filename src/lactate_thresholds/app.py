@@ -109,29 +109,31 @@ def main():
     st.title("Lactate Thresholds")
 
     df = data_placeholder()
-    edited_df = st.data_editor(df, num_rows="dynamic")
+    edited_df = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
     results = lt.determine(edited_df)
 
-
-    if not 'lt_df' in st.session_state:
-        lt_df = pd.DataFrame([results.lt1_estimate.model_dump(), results.lt2_estimate.model_dump()])
+    def construct_lt_df():
+        lt_df = pd.DataFrame(
+            [results.lt1_estimate.model_dump(), results.lt2_estimate.model_dump()]
+        )
         lt_df.insert(0, "Threshold", ["LT1", "LT2"])
         st.session_state.lt_df = lt_df
-    
+
+    if not "lt_df" in st.session_state:
+        construct_lt_df()
+
     def update_lt():
-        results.lt1_estimate.intensity = st.session_state.lt1_setting
-        results.lt2_estimate.intensity = st.session_state.lt2_setting
+        results.calc_lt1_lt2_estimates(
+            lt1=st.session_state.lt1_setting, lt2=st.session_state.lt2_setting
+        )
+        construct_lt_df()
 
-        st.session_state.lt_df.loc[0, "intensity"] = st.session_state.lt1_setting
-        st.session_state.lt_df.loc[1, "intensity"] = st.session_state.lt2_setting
-
-
-
-
-    hcol1, hcol2 = st.columns([.7,.3])
+    hcol1, hcol2 = st.columns([0.7, 0.3])
     with hcol1:
-        st.altair_chart(lt.plot.lactate_intensity_plot(results), use_container_width=True)
+        st.altair_chart(
+            lt.plot.lactate_intensity_plot(results), use_container_width=True
+        )
 
     with hcol2:
         st.markdown("**Set LT1 and LT2 intensity values**")
@@ -139,18 +141,25 @@ def main():
 
         col1, col2 = st.columns(2)
         with col1:
-            st.number_input("LT1", value=st.session_state.lt_df.loc[0, "intensity"], on_change=update_lt, key="lt1_setting")
+            st.number_input(
+                "LT1",
+                value=st.session_state.lt_df.loc[0, "intensity"],
+                on_change=update_lt,
+                key="lt1_setting",
+            )
         with col2:
-            st.number_input("LT2", value=st.session_state.lt_df.loc[1, "intensity"], on_change=update_lt, key="lt2_setting")
+            st.number_input(
+                "LT2",
+                value=st.session_state.lt_df.loc[1, "intensity"],
+                on_change=update_lt,
+                key="lt2_setting",
+            )
 
-        st.write(st.session_state.lt_df.set_index("Threshold"))
+        st.dataframe(
+            st.session_state.lt_df.set_index("Threshold"), use_container_width=True
+        )
     # TODO: update df when new values are set
     # TODO: calc zones based on new values
-    
-
-    
-
-    
 
 
 def start():

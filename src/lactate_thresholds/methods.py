@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -236,11 +236,19 @@ def determine_obla(data_interpolated: pd.DataFrame, obla_lactate: float) -> OBLA
         heart_rate=retrieve_heart_rate_interpolated(data_interpolated, obla_intensity),
     )
 
-def determine_threshold_estimate(data_interpolated: pd.DataFrame, *args) -> ThresholdEstimate:
-    intensity = np.mean([arg.intensity for arg in args])
+
+def determine_threshold_estimate(
+    data_interpolated: pd.DataFrame, intensity: Optional[float] = None, *args
+) -> ThresholdEstimate:
+    if intensity is None:
+        intensity = np.mean([arg.intensity for arg in args])
+
     return ThresholdEstimate(
-        intensity=intensity,
-        lactate=retrieve_lactate_interpolated(data_interpolated, intensity),
-        heart_rate=retrieve_heart_rate_interpolated(data_interpolated, intensity),
+        intensity=np.round(intensity, 1),
+        lactate=np.round(
+            retrieve_lactate_interpolated(data_interpolated, intensity), 1
+        ),
+        heart_rate=np.round(
+            retrieve_heart_rate_interpolated(data_interpolated, intensity), 0
+        ),
     )
-        
