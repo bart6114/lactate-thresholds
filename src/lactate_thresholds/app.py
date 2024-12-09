@@ -123,10 +123,13 @@ def main():
 
     def construct_zones_df():
         if st.session_state.zone_type == "Seiler 3-zone":
-            zones_df = zones.seiler_3_zones(results.lt1_estimate, results.lt2_estimate)
+            zones_df = zones.seiler_3_zones(results)
 
         elif st.session_state.zone_type == "Seiler 5-zone":
-            zones_df = zones.seiler_5_zones(results.lt1_estimate, results.lt2_estimate)
+            zones_df = zones.seiler_5_zones(results)
+
+        elif st.session_state.zone_type == "Friel 7-zone":
+            zones_df = zones.friel_7_zones(results)
 
         else:
             zones_df = pd.DataFrame()
@@ -177,7 +180,7 @@ def main():
 
         st.selectbox(
             "Select zones type",
-            ["Seiler 3-zone", "Seiler 5-zone"],
+            ["Seiler 3-zone", "Seiler 5-zone", "Friel 7-zone"],
             key="zone_type",
             on_change=construct_zones_df,
         )
