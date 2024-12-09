@@ -1,15 +1,39 @@
 name: CI
 
 on:
+  push:
   pull_request:
 
 jobs:
   ci:
-    name: python
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Repository checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          # TODO: change this into configuration variable.
+          version: "0.5.7"
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
+
+      - name: Run ruff checks
+        run: uv run ruff check
+
+      - name: Run ruff formatting
+        run: uv run ruff format --check
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@v4
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -27,8 +51,25 @@ jobs:
         # To be seen if other tests should be added
         run: uv run pytest tests
 
-      - name: Run ruff checks
-        run: uv run ruff check
-
-      - name: Run ruff formatting
-        run: uv run ruff format --check
+  version_tag:
+    # only on main -> tag commit
+    if: github.event.repository.fork == false && github.actor != 'dependatbot[bot]' && github.ref =='refs/head/main'
+    needs:
+      - ci
+      - tests
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tag_action.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+      - name: Bump version and push tag
+        if: github.ref == 'refs/heads/main'
+        id: tag_action
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
+          PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
