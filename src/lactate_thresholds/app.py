@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+from io import StringIO
 
 import pandas as pd
 import streamlit as st
@@ -132,7 +133,7 @@ def main():
 
         st.session_state.snapshot_url = f"{get_base_url()}/?snapshot={base64_str}"
 
-    @st.cache_resource
+    @st.cache_data
     def init_measurements_df():
         if "snapshot" in st.query_params:
             # try to load snapshot
@@ -140,13 +141,13 @@ def main():
                 snapshot = json.loads(
                     base64.b64decode(st.query_params["snapshot"]).decode("utf-8")
                 )
-                df = pd.read_json(snapshot["measurements"])
+                df = pd.read_json(StringIO(snapshot["measurements"]))
                 st.session_state.lt1_setting = snapshot["lt1"]
                 st.session_state.lt2_setting = snapshot["lt2"]
                 st.session_state.zone_type = snapshot["zone_type"]
                 return df
             except Exception as e:
-                st.warning("Error loading snapshot")
+                st.warning(f"Error loading snapshot: {e}")
 
         return data_placeholder()
 
@@ -202,7 +203,7 @@ def main():
             use_container_width=True,
         )
 
-    if not "lt_df" in st.session_state:
+    if "lt_df" not in st.session_state:
         construct_lt_df()
 
     with hcol2:
@@ -234,7 +235,7 @@ def main():
             on_change=construct_zones_df,
         )
 
-        if not "zones_df" in st.session_state:
+        if "zones_df" not in st.session_state:
             construct_zones_df()
 
         st.dataframe(

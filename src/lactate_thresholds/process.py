@@ -1,6 +1,3 @@
-import logging
-
-import numpy as np
 import pandas as pd
 
 from lactate_thresholds.methods import (
@@ -9,10 +6,9 @@ from lactate_thresholds.methods import (
     determine_ltp,
     determine_mod_dmax,
     determine_obla,
-    determine_threshold_estimate,
     interpolate,
 )
-from lactate_thresholds.types import LactateThresholdResults, ThresholdEstimate
+from lactate_thresholds.types import LactateThresholdResults
 
 
 def clean_data(
