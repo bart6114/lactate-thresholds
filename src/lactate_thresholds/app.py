@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 
 import pandas as pd
@@ -5,6 +7,16 @@ import streamlit as st
 
 import lactate_thresholds as lt
 import lactate_thresholds.zones as zones
+
+
+def get_base_url():
+    import urllib.parse
+
+    session = st.runtime.get_instance()._session_mgr.list_active_sessions()[0]
+    st_base_url = urllib.parse.urlunparse(
+        [session.client.request.protocol, session.client.request.host, "", "", "", ""]
+    )
+    return st_base_url
 
 
 def data_placeholder() -> pd.DataFrame:
@@ -107,12 +119,49 @@ def main():
         initial_sidebar_state="auto",
     )
 
+    def snapshot_url():
+        snapshot = {
+            "measurements": df_editor.to_json(index=False, orient="records"),
+            "lt1": st.session_state.lt_df.loc[0, "intensity"],
+            "lt2": st.session_state.lt_df.loc[1, "intensity"],
+            "zone_type": st.session_state.zone_type,
+        }
+
+        json_snapshot = json.dumps(snapshot)
+        base64_str = base64.b64encode(json_snapshot.encode("utf-8")).decode("utf-8")
+
+        st.session_state.snapshot_url = f"{get_base_url()}/?snapshot={base64_str}"
+
+    @st.cache_resource
+    def init_measurements_df():
+        if "snapshot" in st.query_params:
+            # try to load snapshot
+            try:
+                snapshot = json.loads(
+                    base64.b64decode(st.query_params["snapshot"]).decode("utf-8")
+                )
+                df = pd.read_json(snapshot["measurements"])
+                st.session_state.lt1_setting = snapshot["lt1"]
+                st.session_state.lt2_setting = snapshot["lt2"]
+                st.session_state.zone_type = snapshot["zone_type"]
+                return df
+            except Exception as e:
+                st.warning("Error loading snapshot")
+
+        return data_placeholder()
+
+    df = init_measurements_df()
     st.title("Lactate Thresholds")
 
-    df = data_placeholder()
-    edited_df = st.data_editor(df, num_rows="dynamic", use_container_width=True)
-
-    results = lt.determine(edited_df)
+    df_editor = st.data_editor(
+        df,
+        num_rows="dynamic",
+        use_container_width=True,
+        column_config={
+            "intensity": st.column_config.NumberColumn("intensity", step=0.1),
+        },
+    )
+    results = lt.determine(df_editor)
 
     def construct_lt_df():
         lt_df = pd.DataFrame(
@@ -191,6 +240,10 @@ def main():
         st.dataframe(
             st.session_state.zones_df, hide_index=True, use_container_width=True
         )
+
+        with st.popover("Link to snapshot"):
+            snapshot_url()
+            st.code(st.session_state.snapshot_url)
 
 
 def start():
