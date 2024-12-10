@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.repository.fork == false && github.actor != 'dependatbot[bot]' && github.ref =='refs/head/main' # Unsure if this is needed, since it requires version_tag in any case.
     needs:
-      - version-tag
+      - version_tag
     steps:
       - name: Repository checkout
         uses: actions/checkout@v4
