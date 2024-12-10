@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Bart6114", email = "bart@dataroots.io" }
+    { name = "Bart6114", email = "bartsmeets86@gmail.com" }
 ]
 requires-python = ">=3.12.3"
 dependencies = [
