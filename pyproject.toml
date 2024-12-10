@@ -13,7 +13,6 @@ dependencies = [
     "pandas>=2.2.3",
     "pwlf>=2.3.0",
     "pydantic>=2.10.3",
-    "ruptures>=1.1.9",
     "scikit-learn>=1.5.2",
     "statsmodels>=0.14.4",
     "streamlit>=1.40.2",

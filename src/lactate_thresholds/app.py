@@ -134,8 +134,8 @@ def main():
         st.session_state.snapshot_url = f"{get_base_url()}/?snapshot={base64_str}"
 
     @st.cache_data
-    def init_measurements_df():
-        if "snapshot" in st.query_params:
+    def init_measurements_df(snapshop_b64: str = None) -> pd.DataFrame:
+        if snapshop_b64:
             # try to load snapshot
             try:
                 snapshot = json.loads(
@@ -151,7 +151,7 @@ def main():
 
         return data_placeholder()
 
-    df = init_measurements_df()
+    df = init_measurements_df(st.query_params.get("snapshot"))
     st.title("Lactate Thresholds")
 
     df_editor = st.data_editor(
@@ -203,6 +203,13 @@ def main():
             use_container_width=True,
         )
 
+        st.altair_chart(
+            lt.plot.heart_rate_intensity_plot(
+                results, show_fit_line=st.session_state.fit_line
+            ),
+            use_container_width=True,
+        )
+
     if "lt_df" not in st.session_state:
         construct_lt_df()
 
@@ -210,18 +217,22 @@ def main():
         st.markdown("**Set LT1 and LT2 intensity values**")
         st.markdown(":gray[Defaults to estimated values]")
 
+        if "lt1_setting" not in st.session_state:
+            st.session_state.lt1_setting = st.session_state.lt_df.loc[0, "intensity"]
+
+        if "lt2_setting" not in st.session_state:
+            st.session_state.lt2_setting = st.session_state.lt_df.loc[1, "intensity"]
+
         col1, col2 = st.columns(2)
         with col1:
             st.number_input(
                 "LT1",
-                value=st.session_state.lt_df.loc[0, "intensity"],
                 on_change=update_lt,
                 key="lt1_setting",
             )
         with col2:
             st.number_input(
                 "LT2",
-                value=st.session_state.lt_df.loc[1, "intensity"],
                 on_change=update_lt,
                 key="lt2_setting",
             )
