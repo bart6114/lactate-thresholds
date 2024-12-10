@@ -73,3 +73,33 @@ jobs:
           WITH_V: true
           DEFAULT_BUMP: patch
           PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
+
+  test_build_and_publish:
+    name: "Build and Publish to TestPyPi"
+    runs-on: ubuntu-latest
+    if: github.event.repository.fork == false && github.actor != 'dependatbot[bot]' && github.ref =='refs/head/main' # Unsure if this is needed, since it requires version_tag in any case.
+    needs:
+      - version-tag
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          # TODO: change this into configuration variable.
+          version: "0.5.7"
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install the project
+        run: uv sync --all-extras --dev
+
+      - name: Build the project
+        run: uv build
+
+      - name: Publish to TestPyPi
+        run: uv publsih
+        env:
+          UV_PUBLISH_URL: https://test.pypi.org/legacy/
