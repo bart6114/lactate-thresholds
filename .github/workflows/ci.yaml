@@ -36,8 +36,7 @@ jobs:
     # only on main -> tag commit
     # if: github.event.repository.fork == false && github.ref =='refs/head/main'
     needs:
-      - ci
-      - tests
+      - ci_and_test
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_action.outputs.new_tag }}
