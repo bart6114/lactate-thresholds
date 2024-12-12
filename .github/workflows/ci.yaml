@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  ci:
+  ci_and_test:
     runs-on: ubuntu-latest
     steps:
       - name: Repository checkout
@@ -29,31 +29,12 @@ jobs:
       - name: Run ruff formatting
         run: uv run ruff format --check
 
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Repository checkout
-        uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          # TODO: change this into configuration variable.
-          version: "0.5.7"
-
-      - name: Set up Python
-        run: uv python install
-
-      - name: Install the project
-        run: uv sync --all-extras --dev
-
       - name: Run tests
-        # To be seen if other tests should be added
         run: uv run pytest tests
 
   version_tag:
     # only on main -> tag commit
-    if: github.event.repository.fork == false && github.actor != 'dependatbot[bot]' && github.ref =='refs/head/main'
+    # if: github.event.repository.fork == false && github.ref =='refs/head/main'
     needs:
       - ci
       - tests
@@ -77,7 +58,6 @@ jobs:
   test_build_and_publish:
     name: "Build and Publish to TestPyPi"
     runs-on: ubuntu-latest
-    if: github.event.repository.fork == false && github.actor != 'dependatbot[bot]' && github.ref =='refs/head/main' # Unsure if this is needed, since it requires version_tag in any case.
     needs:
       - version_tag
     steps:
@@ -87,7 +67,6 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
-          # TODO: change this into configuration variable.
           version: "0.5.7"
 
       - name: Set up Python
@@ -103,3 +82,4 @@ jobs:
         run: uv publsih
         env:
           UV_PUBLISH_URL: https://test.pypi.org/legacy/
+          UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}

@@ -1,6 +1,6 @@
 [project]
 name = "lactate-thresholds"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -35,3 +35,6 @@ dev = [
 [tool.pytest.ini_options]
 log_level = "INFO"
 log_cli = true
+
+[tool.hatch.version]
+path = "src/lactate_thresholds/__about__.py"
