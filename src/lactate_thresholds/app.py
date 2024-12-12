@@ -179,7 +179,7 @@ def main():
             zones_df = zones.seiler_5_zones(results)
 
         elif st.session_state.zone_type == "Friel 7-zone":
-            zones_df = zones.friel_7_zones(results)
+            zones_df = zones.friel_7_zones_running(results)
 
         else:
             zones_df = pd.DataFrame()
