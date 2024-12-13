@@ -260,7 +260,8 @@ def main():
 
 def start():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    os.system(f"streamlit run {current_dir}/app.py")
+    import subprocess, sys
+    subprocess.run(["streamlit", "run", f"{current_dir}/app.py"] + sys.argv[1:])
 
 
 if __name__ == "__main__":
