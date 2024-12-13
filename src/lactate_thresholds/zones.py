@@ -118,12 +118,13 @@ def friel_7_zones_running(res: LactateThresholdResults) -> pd.DataFrame:
     lt2_heart_rate = res.lt2_estimate.heart_rate
 
     # Define zone boundaries based on LT2
-    hr_zone1 = 0.85 * lt2_heart_rate
-    hr_zone2 = 0.89 * lt2_heart_rate
-    hr_zone3 = 0.94 * lt2_heart_rate
-    hr_zone4 = 0.99 * lt2_heart_rate
-    hr_zone5a = 1.02 * lt2_heart_rate
-    hr_zone5b = 1.06 * lt2_heart_rate
+    hr_zone1 = [0, 0.85 * lt2_heart_rate]
+    hr_zone2 = [0.85 * lt2_heart_rate, 0.89 * lt2_heart_rate]
+    hr_zone3 = [.90 * lt2_heart_rate, 0.94 * lt2_heart_rate]
+    hr_zone4 = [.95 * lt2_heart_rate, .99 * lt2_heart_rate]
+    hr_zone5a = [1.00 * lt2_heart_rate, 1.02 * lt2_heart_rate]
+    hr_zone5b = [1.03 * lt2_heart_rate, 1.06 * lt2_heart_rate]
+    hr_zone5c = [1.06 * lt2_heart_rate, res.clean_data.heart_rate.max()]
 
     # Create the zones DataFrame
     zones = pd.DataFrame(
@@ -133,27 +134,27 @@ def friel_7_zones_running(res: LactateThresholdResults) -> pd.DataFrame:
                 "Zone 2. Aerobic",
                 "Zone 3. Tempo",
                 "Zone 4. SubThreshold",
-                "Zone 5a. SuperThreshold",
+                "Zone 5a. VO2 SuperThreshold",
                 "Zone 5b. Aerobic Capacity",
                 "Zone 5c. Anaerobic Capacity",
             ],
             "heart_rate": [
-                f"Up to {hr_zone1:.0f}",
-                f"{hr_zone1:.0f} - {hr_zone2:.0f}",
-                f"{hr_zone2:.0f} - {hr_zone3:.0f}",
-                f"{hr_zone3:.0f} - {hr_zone4:.0f}",
-                f"{hr_zone4:.0f} - {hr_zone5a:.0f}",
-                f"{hr_zone5a:.0f} - {hr_zone5b:.0f}",
-                f"More than {hr_zone5b:.0f}",
+                f"{hr_zone1[0]:.0f} - {hr_zone1[1]:.0f}",
+                f"{hr_zone2[0]:.0f} - {hr_zone2[1]:.0f}",
+                f"{hr_zone3[0]:.0f} - {hr_zone3[1]:.0f}",
+                f"{hr_zone4[0]:.0f} - {hr_zone4[1]:.0f}",
+                f"{hr_zone5a[0]:.0f} - {hr_zone5a[1]:.0f}",
+                f"{hr_zone5b[0]:.0f} - {hr_zone5b[1]:.0f}",
+                f"{hr_zone5c[0]:.0f} - max",
             ],
             "intensity": [
-                f"Up to {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone1):.2f}",
-                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone1):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone2):.2f}",
-                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone2):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone3):.2f}",
-                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone3):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone4):.2f}",
-                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone4):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5a):.2f}",
-                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5a):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5b):.2f}",
-                f"More than {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5b):.2f}",
+                f"up to {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone1[1]):.2f}",
+                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone2[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone2[1]):.2f}",
+                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone3[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone3[1]):.2f}",
+                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone4[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone4[1]):.2f}",
+                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5a[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5a[1]):.2f}",
+                f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5b[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5b[1]):.2f}",
+                f"more than {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5c[0]):.2f}",
             ],
             "focus": [
                 "Active recovery.",
