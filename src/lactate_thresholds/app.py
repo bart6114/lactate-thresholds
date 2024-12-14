@@ -260,7 +260,9 @@ def main():
 
 def start():
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    import subprocess, sys
+    import subprocess
+    import sys
+
     subprocess.run(["streamlit", "run", f"{current_dir}/app.py"] + sys.argv[1:])
 
 

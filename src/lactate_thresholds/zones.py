@@ -99,8 +99,10 @@ def seiler_5_zones(res: LactateThresholdResults) -> pd.DataFrame:
 
     return zones
 
+
 # friel references
 # https://web.archive.org/web/20241212065559/https://www.trainingbible.com/joesblog/2009/11/quick-guide-to-setting-zones.html
+
 
 def friel_7_zones_running(res: LactateThresholdResults) -> pd.DataFrame:
     """Determine Friel's 7-zone training zones based on LT (Lactate Threshold).
@@ -120,8 +122,8 @@ def friel_7_zones_running(res: LactateThresholdResults) -> pd.DataFrame:
     # Define zone boundaries based on LT2
     hr_zone1 = [0, 0.85 * lt2_heart_rate]
     hr_zone2 = [0.85 * lt2_heart_rate, 0.89 * lt2_heart_rate]
-    hr_zone3 = [.90 * lt2_heart_rate, 0.94 * lt2_heart_rate]
-    hr_zone4 = [.95 * lt2_heart_rate, .99 * lt2_heart_rate]
+    hr_zone3 = [0.90 * lt2_heart_rate, 0.94 * lt2_heart_rate]
+    hr_zone4 = [0.95 * lt2_heart_rate, 0.99 * lt2_heart_rate]
     hr_zone5a = [1.00 * lt2_heart_rate, 1.02 * lt2_heart_rate]
     hr_zone5b = [1.03 * lt2_heart_rate, 1.06 * lt2_heart_rate]
     hr_zone5c = [1.06 * lt2_heart_rate, res.clean_data.heart_rate.max()]
@@ -138,15 +140,6 @@ def friel_7_zones_running(res: LactateThresholdResults) -> pd.DataFrame:
                 "Zone 5b. Aerobic Capacity",
                 "Zone 5c. Anaerobic Capacity",
             ],
-            "heart_rate": [
-                f"{hr_zone1[0]:.0f} - {hr_zone1[1]:.0f}",
-                f"{hr_zone2[0]:.0f} - {hr_zone2[1]:.0f}",
-                f"{hr_zone3[0]:.0f} - {hr_zone3[1]:.0f}",
-                f"{hr_zone4[0]:.0f} - {hr_zone4[1]:.0f}",
-                f"{hr_zone5a[0]:.0f} - {hr_zone5a[1]:.0f}",
-                f"{hr_zone5b[0]:.0f} - {hr_zone5b[1]:.0f}",
-                f"{hr_zone5c[0]:.0f} - max",
-            ],
             "intensity": [
                 f"up to {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone1[1]):.2f}",
                 f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone2[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone2[1]):.2f}",
@@ -155,6 +148,15 @@ def friel_7_zones_running(res: LactateThresholdResults) -> pd.DataFrame:
                 f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5a[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5a[1]):.2f}",
                 f"{retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5b[0]):.2f} - {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5b[1]):.2f}",
                 f"more than {retrieve_intensity_based_on_heartrate_interpolated(res.interpolated_data, hr_zone5c[0]):.2f}",
+            ],
+            "heart_rate": [
+                f"{hr_zone1[0]:.0f} - {hr_zone1[1]:.0f}",
+                f"{hr_zone2[0]:.0f} - {hr_zone2[1]:.0f}",
+                f"{hr_zone3[0]:.0f} - {hr_zone3[1]:.0f}",
+                f"{hr_zone4[0]:.0f} - {hr_zone4[1]:.0f}",
+                f"{hr_zone5a[0]:.0f} - {hr_zone5a[1]:.0f}",
+                f"{hr_zone5b[0]:.0f} - {hr_zone5b[1]:.0f}",
+                f"{hr_zone5c[0]:.0f} - max",
             ],
             "focus": [
                 "Active recovery.",
