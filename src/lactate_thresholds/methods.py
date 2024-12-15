@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,28 +9,26 @@ from numpy.polynomial.polynomial import Polynomial
 from scipy.optimize import curve_fit
 
 from lactate_thresholds.types import (
+    OBLA,
     BaseLinePlus,
     LactateTurningPoint,
     LogLog,
     ModDMax,
+    ThresholdEstimate,
 )
 from lactate_thresholds.utils import (
-    retrieve_heart_rate,
-    retrieve_heart_rate_interpolated,
-    retrieve_intensity_interpolated,
-    retrieve_lactate_interpolated,
+    get_heart_rate,
+    get_heart_rate_interpolated,
+    get_intensity_interpolated,
+    get_lactate_interpolated,
 )
 
 
-def interpolate(
-    df: pd.DataFrame, interpolation_factor: float = 0.1, include_baseline: bool = True
-) -> pd.DataFrame:
+def interpolate(df: pd.DataFrame, interpolation_factor: float = 0.1, include_baseline: bool = True) -> pd.DataFrame:
     # Adjust baseline intensity
     if include_baseline and (df["intensity"] == 0).any():
         to_subtract = df.iloc[2]["intensity"] - df.iloc[1]["intensity"]
-        df.loc[df["intensity"] == 0, "intensity"] = (
-            df.iloc[1]["intensity"] - to_subtract
-        )
+        df.loc[df["intensity"] == 0, "intensity"] = df.iloc[1]["intensity"] - to_subtract
 
     # Remove baseline if not included
     if not include_baseline and (df["intensity"] == 0).any():
@@ -49,9 +47,7 @@ def interpolate(
         model = sm.OLS(y, X).fit()
 
         # Generate new intensity values for interpolation
-        new_intensity = np.arange(
-            df["intensity"].min(), df["intensity"].max(), interpolation_factor
-        )
+        new_intensity = np.arange(df["intensity"].min(), df["intensity"].max(), interpolation_factor)
         new_X = np.column_stack([new_intensity**i for i in range(1, 4)])
         new_X = sm.add_constant(new_X)  # Add intercept term for prediction
 
@@ -92,30 +88,20 @@ def determine_ltp(
     breakpoint_intensities = breakpoints[1:-1]  # Ignore first and last points
 
     lt1 = LactateTurningPoint(
-        lactate=retrieve_lactate_interpolated(
-            data_interpolated, breakpoint_intensities[0]
-        ),
+        lactate=get_lactate_interpolated(data_interpolated, breakpoint_intensities[0]),
         intensity=breakpoint_intensities[0],
-        heart_rate=retrieve_heart_rate_interpolated(
-            data_interpolated, breakpoint_intensities[0]
-        ),
+        heart_rate=get_heart_rate_interpolated(data_interpolated, breakpoint_intensities[0]),
     )
     lt2 = LactateTurningPoint(
-        lactate=retrieve_lactate_interpolated(
-            data_interpolated, breakpoint_intensities[1]
-        ),
+        lactate=get_lactate_interpolated(data_interpolated, breakpoint_intensities[1]),
         intensity=breakpoint_intensities[1],
-        heart_rate=retrieve_heart_rate_interpolated(
-            data_interpolated, breakpoint_intensities[1]
-        ),
+        heart_rate=get_heart_rate_interpolated(data_interpolated, breakpoint_intensities[1]),
     )
 
     return [lt1, lt2]
 
 
-def determine_mod_dmax(
-    data_clean: pd.DataFrame, data_interpolated: pd.DataFrame
-) -> ModDMax:
+def determine_mod_dmax(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame) -> ModDMax:
     if data_clean.empty or data_clean.iloc[0]["intensity"] == 0:
         data_dmax = data_clean.iloc[1:].copy()
     else:
@@ -137,9 +123,7 @@ def determine_mod_dmax(
 
     # Calculate the differences
     diff_lactate = data_dmax["lactate"].max() - data_first_rise["lactate"].values[0]
-    diff_intensity = (
-        data_dmax["intensity"].max() - data_first_rise["intensity"].values[0]
-    )
+    diff_intensity = data_dmax["intensity"].max() - data_first_rise["intensity"].values[0]
 
     lin_beta = diff_lactate / diff_intensity
 
@@ -156,21 +140,17 @@ def determine_mod_dmax(
 
     # Workaround for unplausible estimations
     if model_lactate > 8:
-        logging.warning(
-            "Estimated lactate value via ModDMax is higher than 8 mmol/L. Returning None."
-        )
+        logging.warning("Estimated lactate value via ModDMax is higher than 8 mmol/L. Returning None.")
         return None
 
     return ModDMax(
-        lactate=retrieve_lactate_interpolated(data_interpolated, model_intensity),
+        lactate=get_lactate_interpolated(data_interpolated, model_intensity),
         intensity=model_intensity,
-        heart_rate=retrieve_heart_rate(data_clean, [model_intensity])[0],
+        heart_rate=get_heart_rate(data_clean, [model_intensity])[0],
     )
 
 
-def determine_loglog(
-    data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, loglog_restrainer=1
-):
+def determine_loglog(data_clean: pd.DataFrame, data_interpolated: pd.DataFrame, loglog_restrainer=1):
     data_filtered = data_interpolated[data_interpolated["intensity"] > 0].copy()
     data_filtered["intensity"] = np.log(data_filtered["intensity"])
     data_filtered["lactate"] = np.log(data_filtered["lactate"])
@@ -178,18 +158,12 @@ def determine_loglog(
     n = len(data_filtered)
     data_filtered = data_filtered.iloc[: int(loglog_restrainer * n)]
 
-    piecewise_fit = pwlf.PiecewiseLinFit(
-        data_filtered["intensity"].values, data_filtered["lactate"].values
-    )
+    piecewise_fit = pwlf.PiecewiseLinFit(data_filtered["intensity"].values, data_filtered["lactate"].values)
     breakpoints = piecewise_fit.fit(2)  # 1 breakpoint means 2 segments
 
     loglog_intensity = np.exp(breakpoints[1])
-    lactate_interpolated = retrieve_lactate_interpolated(
-        data_interpolated, loglog_intensity
-    )
-    loglog_heart_rate = retrieve_heart_rate_interpolated(
-        data_interpolated, loglog_intensity
-    )
+    lactate_interpolated = get_lactate_interpolated(data_interpolated, loglog_intensity)
+    loglog_heart_rate = get_heart_rate_interpolated(data_interpolated, loglog_intensity)
 
     return LogLog(
         lactate=lactate_interpolated,
@@ -208,18 +182,36 @@ def determine_baseline(
     bsln = data_interpolated["lactate"].iloc[:baseline_window].mean()
     bsln_plus = bsln + plus
 
-    if (
-        bsln_plus > data_interpolated["lactate"].max()
-        or bsln_plus < data_interpolated["lactate"].min()
-    ):
+    if bsln_plus > data_interpolated["lactate"].max() or bsln_plus < data_interpolated["lactate"].min():
         logging.warning(f"Baseline + {plus} is out of range.")
         return None
 
-    bsln_plus_intensity = retrieve_intensity_interpolated(data_interpolated, bsln_plus)
+    bsln_plus_intensity = get_intensity_interpolated(data_interpolated, bsln_plus)
     return BaseLinePlus(
         lactate=bsln_plus,
         intensity=bsln_plus_intensity,
-        heart_rate=retrieve_heart_rate_interpolated(
-            data_interpolated, bsln_plus_intensity
-        ),
+        heart_rate=get_heart_rate_interpolated(data_interpolated, bsln_plus_intensity),
+        plus=plus,
+    )
+
+
+def determine_obla(data_interpolated: pd.DataFrame, obla_lactate: float) -> OBLA:
+    obla_intensity = get_intensity_interpolated(data_interpolated, obla_lactate)
+    return OBLA(
+        lactate=obla_lactate,
+        intensity=obla_intensity,
+        heart_rate=get_heart_rate_interpolated(data_interpolated, obla_intensity),
+    )
+
+
+def determine_threshold_estimate(
+    data_interpolated: pd.DataFrame, intensity: Optional[float] = None, *args
+) -> ThresholdEstimate:
+    if intensity is None:
+        intensity = np.mean([arg.intensity for arg in args])
+
+    return ThresholdEstimate(
+        intensity=np.round(intensity, 1),
+        lactate=np.round(get_lactate_interpolated(data_interpolated, intensity), 1),
+        heart_rate=np.round(get_heart_rate_interpolated(data_interpolated, intensity), 0),
     )

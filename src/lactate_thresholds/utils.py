@@ -3,7 +3,7 @@ import pandas as pd
 import statsmodels.api as sm
 
 
-def retrieve_heart_rate(df_clean: pd.DataFrame, intensity_values: np.array) -> np.array:
+def get_heart_rate(df_clean: pd.DataFrame, intensity_values: np.array) -> np.array:
     df_clean = df_clean.iloc[1:]
 
     X = sm.add_constant(df_clean["intensity"])
@@ -14,28 +14,21 @@ def retrieve_heart_rate(df_clean: pd.DataFrame, intensity_values: np.array) -> n
     return model_heart_rate.predict(new_data).round(0)
 
 
-def retrieve_heart_rate_interpolated(
-    df_interpolated: pd.DataFrame, intensity: float
-) -> float:
-    closest_intensity = df_interpolated.iloc[
-        (df_interpolated["intensity"] - intensity).abs().argsort()[:1]
-    ]
+def get_heart_rate_interpolated(df_interpolated: pd.DataFrame, intensity: float) -> float:
+    closest_intensity = df_interpolated.iloc[(df_interpolated["intensity"] - intensity).abs().argsort()[:1]]
     return closest_intensity["heart_rate"].values[0]
 
 
-def retrieve_lactate_interpolated(
-    df_interpolated: pd.DataFrame, intensity: float
-) -> float:
-    closest_intensity = df_interpolated.iloc[
-        (df_interpolated["intensity"] - intensity).abs().argsort()[:1]
-    ]
+def get_lactate_interpolated(df_interpolated: pd.DataFrame, intensity: float) -> float:
+    closest_intensity = df_interpolated.iloc[(df_interpolated["intensity"] - intensity).abs().argsort()[:1]]
     return closest_intensity["lactate"].values[0]
 
 
-def retrieve_intensity_interpolated(
-    df_interpolated: pd.DataFrame, lactate: float
-) -> float:
-    closest_lactate = df_interpolated.iloc[
-        (df_interpolated["lactate"] - lactate).abs().argsort()[:1]
-    ]
+def get_intensity_interpolated(df_interpolated: pd.DataFrame, lactate: float) -> float:
+    closest_lactate = df_interpolated.iloc[(df_interpolated["lactate"] - lactate).abs().argsort()[:1]]
     return closest_lactate["intensity"].values[0]
+
+
+def get_intensity_based_on_heartrate_interpolated(df_interpolated: pd.DataFrame, heart_rate: float) -> float:
+    closest_hr = df_interpolated.iloc[(df_interpolated["heart_rate"] - heart_rate).abs().argsort()[:1]]
+    return closest_hr["intensity"].values[0]
