@@ -10,3 +10,4 @@ wheels/
 .venv
 test_output/
 .vscode/
+.streamlit
