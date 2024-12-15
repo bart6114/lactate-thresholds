@@ -34,3 +34,9 @@ dev = [
 [tool.pytest.ini_options]
 log_level = "INFO"
 log_cli = true
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F"]

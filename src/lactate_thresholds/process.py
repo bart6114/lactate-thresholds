@@ -38,9 +38,7 @@ def clean_data(
     ## iterate over columns and assert that all entries in the column are numeric
     for col in df_clean.columns:
         if not pd.api.types.is_numeric_dtype(df_clean[col]):
-            raise ValueError(
-                f"Column '{col}' is not numeric / contains nonnumeric values"
-            )
+            raise ValueError(f"Column '{col}' is not numeric / contains nonnumeric values")
 
     return df_clean
 
@@ -54,9 +52,7 @@ def determine(
     heart_rate_col: str = "heart_rate",
     include_baseline=False,
 ) -> LactateThresholdResults:
-    dfc = clean_data(
-        df, step_col, length_col, intensity_col, lactate_col, heart_rate_col
-    )
+    dfc = clean_data(df, step_col, length_col, intensity_col, lactate_col, heart_rate_col)
     dfi = interpolate(dfc, include_baseline=include_baseline)
 
     res = LactateThresholdResults(clean_data=dfc, interpolated_data=dfi)

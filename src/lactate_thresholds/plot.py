@@ -26,17 +26,11 @@ def lactate_intensity_plot(x: LactateThresholdResults, show_fit_line: bool = Tru
         .properties(width=800, height=600)
     )
 
-    points_orig = base.mark_point(color="grey", opacity=0.3).properties(
-        title="Lactate Intensity Plot"
-    )
+    points_orig = base.mark_point(color="grey", opacity=0.3).properties(title="Lactate Intensity Plot")
     line_orig = base.mark_line(color="grey", opacity=0.3)
 
     if show_fit_line:
-        line_interpolated = (
-            alt.Chart(interpolated_data)
-            .mark_line()
-            .encode(x="intensity:Q", y="lactate:Q")
-        )
+        line_interpolated = alt.Chart(interpolated_data).mark_line().encode(x="intensity:Q", y="lactate:Q")
 
     # Add thresholds with shapes and colors
     threshold_data = []
@@ -96,15 +90,10 @@ def lactate_intensity_plot(x: LactateThresholdResults, show_fit_line: bool = Tru
     )
 
     # Add interactive selection tied to interpolated data
-    nearest = alt.selection_point(
-        nearest=True, on="mouseover", fields=["intensity"], empty=False
-    )
+    nearest = alt.selection_point(nearest=True, on="mouseover", fields=["intensity"], empty=False)
 
     selectors = (
-        alt.Chart(interpolated_data)
-        .mark_point()
-        .encode(x="intensity:Q", opacity=alt.value(0))
-        .add_params(nearest)
+        alt.Chart(interpolated_data).mark_point().encode(x="intensity:Q", opacity=alt.value(0)).add_params(nearest)
     )
 
     points = (
@@ -193,17 +182,11 @@ def heart_rate_intensity_plot(x: LactateThresholdResults, show_fit_line: bool = 
         .properties(width=800, height=600)
     )
 
-    points_orig = base.mark_point(color="grey", opacity=0.3).properties(
-        title="Heart Rate Intensity Plot"
-    )
+    points_orig = base.mark_point(color="grey", opacity=0.3).properties(title="Heart Rate Intensity Plot")
     line_orig = base.mark_line(color="grey", opacity=0.3)
 
     if show_fit_line:
-        line_interpolated = (
-            alt.Chart(interpolated_data)
-            .mark_line()
-            .encode(x="intensity:Q", y="heart_rate:Q")
-        )
+        line_interpolated = alt.Chart(interpolated_data).mark_line().encode(x="intensity:Q", y="heart_rate:Q")
 
     # Add thresholds with shapes and colors
     threshold_data = []
@@ -263,15 +246,10 @@ def heart_rate_intensity_plot(x: LactateThresholdResults, show_fit_line: bool = 
     )
 
     # Add interactive selection tied to interpolated data
-    nearest = alt.selection_point(
-        nearest=True, on="mouseover", fields=["intensity"], empty=False
-    )
+    nearest = alt.selection_point(nearest=True, on="mouseover", fields=["intensity"], empty=False)
 
     selectors = (
-        alt.Chart(interpolated_data)
-        .mark_point()
-        .encode(x="intensity:Q", opacity=alt.value(0))
-        .add_params(nearest)
+        alt.Chart(interpolated_data).mark_point().encode(x="intensity:Q", opacity=alt.value(0)).add_params(nearest)
     )
 
     points = (

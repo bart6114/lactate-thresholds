@@ -33,7 +33,6 @@ def data_placeholder() -> pd.DataFrame:
                 "lactate_8": 1.0,
                 "cadence": 102,
                 "rpe": 6,
-                "feeling": "Zeer zeer licht",
             },
             {
                 "step": 2,
@@ -45,7 +44,6 @@ def data_placeholder() -> pd.DataFrame:
                 "lactate_8": 1.0,
                 "cadence": 100,
                 "rpe": 7,
-                "feeling": "Zeer zeer licht",
             },
             {
                 "step": 3,
@@ -57,7 +55,6 @@ def data_placeholder() -> pd.DataFrame:
                 "lactate_8": 0.9,
                 "cadence": 100,
                 "rpe": 10,
-                "feeling": "Zeer licht",
             },
             {
                 "step": 4,
@@ -69,7 +66,6 @@ def data_placeholder() -> pd.DataFrame:
                 "lactate_8": 1.0,
                 "cadence": 98,
                 "rpe": 12,
-                "feeling": "Tamelijk licht",
             },
             {
                 "step": 5,
@@ -81,7 +77,6 @@ def data_placeholder() -> pd.DataFrame:
                 "lactate_8": 1.9,
                 "cadence": 98,
                 "rpe": 16,
-                "feeling": "Zwaar",
             },
             {
                 "step": 6,
@@ -93,7 +88,6 @@ def data_placeholder() -> pd.DataFrame:
                 "lactate_8": 3.8,
                 "cadence": 94,
                 "rpe": 18,
-                "feeling": "Zwaar",
             },
             {
                 "step": 7,
@@ -105,7 +99,6 @@ def data_placeholder() -> pd.DataFrame:
                 "lactate_8": 7.5,
                 "cadence": 92,
                 "rpe": 19,
-                "feeling": "Zeer zeer zwaar",
             },
         ]
     )
@@ -138,9 +131,7 @@ def main():
         if snapshop_b64:
             # try to load snapshot
             try:
-                snapshot = json.loads(
-                    base64.b64decode(st.query_params["snapshot"]).decode("utf-8")
-                )
+                snapshot = json.loads(base64.b64decode(st.query_params["snapshot"]).decode("utf-8"))
                 df = pd.read_json(StringIO(snapshot["measurements"]))
                 st.session_state.lt1_setting = snapshot["lt1"]
                 st.session_state.lt2_setting = snapshot["lt2"]
@@ -165,9 +156,7 @@ def main():
     results = lt.determine(df_editor)
 
     def construct_lt_df():
-        lt_df = pd.DataFrame(
-            [results.lt1_estimate.model_dump(), results.lt2_estimate.model_dump()]
-        )
+        lt_df = pd.DataFrame([results.lt1_estimate.model_dump(), results.lt2_estimate.model_dump()])
         lt_df.insert(0, "Threshold", ["LT1", "LT2"])
         st.session_state.lt_df = lt_df
 
@@ -187,9 +176,7 @@ def main():
         st.session_state.zones_df = zones_df
 
     def update_lt():
-        results.calc_lt1_lt2_estimates(
-            lt1=st.session_state.lt1_setting, lt2=st.session_state.lt2_setting
-        )
+        results.calc_lt1_lt2_estimates(lt1=st.session_state.lt1_setting, lt2=st.session_state.lt2_setting)
         construct_lt_df()
         construct_zones_df()
 
@@ -197,16 +184,12 @@ def main():
     with hcol1:
         st.checkbox("Show fit line", key="fit_line", value=True)
         st.altair_chart(
-            lt.plot.lactate_intensity_plot(
-                results, show_fit_line=st.session_state.fit_line
-            ),
+            lt.plot.lactate_intensity_plot(results, show_fit_line=st.session_state.fit_line),
             use_container_width=True,
         )
 
         st.altair_chart(
-            lt.plot.heart_rate_intensity_plot(
-                results, show_fit_line=st.session_state.fit_line
-            ),
+            lt.plot.heart_rate_intensity_plot(results, show_fit_line=st.session_state.fit_line),
             use_container_width=True,
         )
 
@@ -249,9 +232,7 @@ def main():
         if "zones_df" not in st.session_state:
             construct_zones_df()
 
-        st.dataframe(
-            st.session_state.zones_df, hide_index=True, use_container_width=True
-        )
+        st.dataframe(st.session_state.zones_df, hide_index=True, use_container_width=True)
 
         with st.popover("Link to snapshot"):
             snapshot_url()
