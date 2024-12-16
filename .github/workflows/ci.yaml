@@ -35,8 +35,8 @@ jobs:
   version_tag:
     # only on main -> tag commit
     # if: github.event.repository.fork == false && github.ref =='refs/head/main'
-    # needs:
-    #   - ci_and_test
+    needs:
+      - ci_and_test
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_action.outputs.new_tag }}
@@ -53,6 +53,7 @@ jobs:
           WITH_V: true
           DEFAULT_BUMP: patch
           PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
+          VERBOSE: true
 
   test_build_and_publish:
     name: "Build and Publish to TestPyPi"
