@@ -59,8 +59,9 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - version_tag
-    # permissions:
-    #   id-token: write
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Repository checkout
         uses: actions/checkout@v4
