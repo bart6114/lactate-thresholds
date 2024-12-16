@@ -31,6 +31,9 @@ dev = [
     "ruff>=0.8.1",
 ]
 
+[tool.uv]
+trusted-publishing = "always"
+
 [tool.pytest.ini_options]
 log_level = "INFO"
 log_cli = true

@@ -60,7 +60,7 @@ jobs:
     needs:
       - version_tag
     permissions:
-      contents: read
+      id-token: write
     steps:
       - name: Repository checkout
         uses: actions/checkout@v4
