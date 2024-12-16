@@ -53,6 +53,7 @@ jobs:
           WITH_V: true
           DEFAULT_BUMP: patch
           PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
+          INITIAL_VERSION: "0.0.1"
 
   test_build_and_publish:
     name: "Build and Publish to TestPyPi"
