@@ -57,8 +57,8 @@ jobs:
   test_build_and_publish:
     name: "Build and Publish to TestPyPi"
     runs-on: ubuntu-latest
-    # needs:
-    #  - version_tag
+    needs:
+      - version_tag
     permissions:
       id-token: write
     steps:
