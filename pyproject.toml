@@ -1,6 +1,6 @@
 [project]
 name = "lactate-thresholds"
-dynamic = ["version"]
+version = "v0.0.1"
 description = "Add your description here"
 readme = "README.md"
 authors = [
