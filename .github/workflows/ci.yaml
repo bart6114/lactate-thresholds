@@ -45,7 +45,7 @@ jobs:
         with:
           fetch-depth: "0"
       - name: Bump version and push tag
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         id: tag_action
         uses: anothrNick/github-tag-action@1.71.0
         env:
@@ -53,13 +53,14 @@ jobs:
           WITH_V: true
           DEFAULT_BUMP: patch
           PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
-          VERBOSE: true
 
   test_build_and_publish:
     name: "Build and Publish to TestPyPi"
     runs-on: ubuntu-latest
-    needs:
-      - version_tag
+    # needs:
+    #  - version_tag
+    permissions:
+      id-token: write
     steps:
       - name: Repository checkout
         uses: actions/checkout@v4
