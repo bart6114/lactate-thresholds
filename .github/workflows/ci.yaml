@@ -76,7 +76,7 @@ jobs:
         run: uv python install
 
       - name: Write version tag to pyproject.toml
-        run: uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version ${ needs.version_tag.outputs.new_tag }
+        run: uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version ${{ needs.version_tag.outputs.new_tag }}
 
       - name: Install the project
         run: uv sync --all-extras --dev
