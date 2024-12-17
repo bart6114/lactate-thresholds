@@ -34,8 +34,6 @@ jobs:
         run: uv run pytest tests
 
   version_tag:
-    # only on main -> tag commit
-    # if: github.event.repository.fork == false && github.ref =='refs/head/main'
     needs:
       - test
     permissions:
@@ -90,4 +88,5 @@ jobs:
         run: uv publish --publish-url https://test.pypi.org/legacy/
 
       - name: Publish to PyPi
+        if: github.event.repository.fork == false && github.ref =='refs/head/main'
         run: uv publish --publish-url https://pypi.python.org/pypi
