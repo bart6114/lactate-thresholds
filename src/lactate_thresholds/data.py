@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def example_data_cycling():
     return pd.DataFrame.from_dict(
         [
