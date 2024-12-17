@@ -83,4 +83,4 @@ jobs:
         run: uv build
 
       - name: Publish to TestPyPi
-        run: uv publish ----publish-url https://test.pypi.org/legacy/
+        run: uv publish --publish-url https://test.pypi.org/legacy/
