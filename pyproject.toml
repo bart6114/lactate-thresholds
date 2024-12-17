@@ -47,7 +47,6 @@ select = ["E", "F"]
 [[tool.uv.index]]
 name = "pypi"
 url = "https://pypi.org/simple/"
-publish-url = "https://upload.pypi.org/legacy/"
 default = true
 
 [[tool.uv.index]]
