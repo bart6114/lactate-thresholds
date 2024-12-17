@@ -54,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           DEFAULT_BUMP: patch
-          PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
+          RELEASE_BRANCHES: main
 
   test_build_and_publish:
     name: "Build and Publish to TestPyPi"
