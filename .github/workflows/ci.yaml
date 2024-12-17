@@ -40,6 +40,8 @@ jobs:
     # if: github.event.repository.fork == false && github.ref =='refs/head/main'
     needs:
       - ci_and_test
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     outputs:
       new_tag: ${{ steps.tag_action.outputs.new_tag }}
@@ -51,7 +53,6 @@ jobs:
         id: tag_action
         uses: anothrNick/github-tag-action@1.71.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           DEFAULT_BUMP: patch
           RELEASE_BRANCHES: main
