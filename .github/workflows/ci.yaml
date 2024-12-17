@@ -81,11 +81,13 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Build the project
-        run: uv build
+        run: uv build 
 
-      - name: Publish to TestPyPi
-        run: uv publish --trusted-publishing never
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
-          UV_PUBLISH_URL: https://test.pypi.org/legacy/
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+    # retrieve your distributions here
+
+
 
