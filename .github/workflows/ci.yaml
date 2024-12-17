@@ -48,7 +48,6 @@ jobs:
         with:
           fetch-depth: "0"
       - name: Bump version and push tag
-        if: github.ref == 'refs/heads/main'
         id: tag_action
         uses: anothrNick/github-tag-action@1.71.0
         env:
