@@ -1,6 +1,6 @@
 [project]
 name = "lactate-thresholds"
-version = "0.1.0"
+version = "v0.0.1"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -30,6 +30,9 @@ dev = [
     "pytest>=8.3.4",
     "ruff>=0.8.1",
 ]
+
+[tool.uv]
+trusted-publishing = "always"
 
 [tool.pytest.ini_options]
 log_level = "INFO"
