@@ -81,13 +81,8 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Build the project
-        run: uv build 
+        run: uv build
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-    # retrieve your distributions here
-
-
+      - name: Publish to TestPyPi
+        run: uv publish --publish-url https://test.pypi.org/legacy/
 
