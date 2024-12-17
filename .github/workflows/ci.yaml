@@ -1,4 +1,6 @@
 name: CI
+env:
+  UV_INDEX: pypi
 
 on:
   push:
