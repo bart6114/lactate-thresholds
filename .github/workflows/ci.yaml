@@ -48,13 +48,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: "0"
       - name: Bump version and push tag
         id: tag_action
         uses: anothrNick/github-tag-action@1.71.0
         env:
           WITH_V: true
-          DEFAULT_BUMP: patch
+          PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
           RELEASE_BRANCHES: main
 
   test_build_and_publish:
