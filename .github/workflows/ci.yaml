@@ -56,7 +56,7 @@ jobs:
           WITH_V: true
           PRERELEASE: ${{ github.ref != 'refs/heads/main' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-          PRERELEASE_SUFFIX: ${{ github.sha }}
+          PRERELEASE_SUFFIX: pre
           RELEASE_BRANCHES: main
 
   test_build_and_publish:
