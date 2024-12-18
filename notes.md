@@ -1,4 +1,0 @@
-- [ ] insert data > assume pandas
-- [ ] fit polynomial to interpolate
-- [ ] determine thresholds
-- [ ] convenience plot funcs
