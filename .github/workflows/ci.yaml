@@ -55,6 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRERELEASE_SUFFIX: pre
           RELEASE_BRANCHES: main
+          DEFAULT_BUMP: patch
 
   build_and_publish:
     name: "Build and Publish to TestPyPi"
