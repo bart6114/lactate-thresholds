@@ -1,7 +1,7 @@
 [project]
 name = "lactate-thresholds"
 version = "v0.0.1"
-description = "Add your description here"
+description = "Convenience functions for analysis of lactate-intensity curves."
 readme = "README.md"
 authors = [
     { name = "bart6114", email = "bartsmeets86@gmail.com" },
