@@ -8,7 +8,7 @@
 
 
 
-# `lactate-thresholds`
+# lactate-thresholds
 
 A Python package to analyze lactate values and corresponding thresholds. Typically useful in a context when used to determine workout zones.
 
