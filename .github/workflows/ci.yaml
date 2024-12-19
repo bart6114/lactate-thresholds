@@ -89,4 +89,4 @@ jobs:
 
       - name: Publish to PyPi
         if: github.event.repository.fork == false && github.ref =='refs/heads/main'
-        run: uv publish --publish-url https://pypi.python.org/pypi
+        run: uv publish --publish-url https://upload.pypi.org/legacy/
