@@ -119,3 +119,7 @@ Note that a `Dockerfile` is also available that runs the streamlit app.
 
 
 ![streamlit app](readme/streamlit.png)
+
+## Acknowledgements
+
+A big shout out to [lactater](https://github.com/fmmattioni/lactater/) that most definitely served as a strong inspiration for this package.
