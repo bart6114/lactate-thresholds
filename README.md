@@ -1,8 +1,14 @@
+
+![PyPI - Version](https://img.shields.io/pypi/v/lactate-thresholds)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/bart6114/lactate-thresholds/ci.yaml)
+![GitHub License](https://img.shields.io/github/license/bart6114/lactate-thresholds)
+
 [![forthebadge](https://forthebadge.com/images/badges/made-in-python.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/approved-by-my-mom.svg)](https://forthebadge.com)
 
 
-# lactate_thresholds
+
+# `lactate-thresholds`
 
 A Python package to analyze lactate values and corresponding thresholds. Typically useful in a context when used to determine workout zones.
 
