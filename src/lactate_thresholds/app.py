@@ -139,8 +139,15 @@ def main():
         """Initialize measurements dataframe with placeholder data."""
         return data_placeholder()
     
-    def load_from_snapshot(snapshot_b64: str) -> pd.DataFrame:
-        """Load measurements from a snapshot."""
+    def load_from_snapshot(snapshot_b64: str) -> tuple[pd.DataFrame, dict] | tuple[None, None]:
+        """
+        Load measurements from a snapshot.
+        
+        Returns:
+            A tuple containing:
+            - DataFrame with measurements data
+            - Dictionary with snapshot parameters (lt1, lt2, zone_type, comments)
+        """
         try:
             # URL decode the snapshot parameter
             encoded_data = urllib.parse.unquote(snapshot_b64)
@@ -152,29 +159,51 @@ def main():
             else:
                 # Legacy format: direct base64 decode
                 snapshot = json.loads(base64.b64decode(encoded_data).decode("utf-8"))
+            
             df = pd.read_json(StringIO(snapshot["measurements"]))
-            st.session_state.lt1_setting = snapshot["lt1"]
-            st.session_state.lt2_setting = snapshot["lt2"]
-            st.session_state.zone_type = snapshot["zone_type"]
-            # Load comments if available (for backward compatibility)
-            st.session_state.test_comments = snapshot.get("comments", "")
-            return df
+            
+            # Return all parameters instead of setting them directly
+            params = {
+                "lt1_setting": snapshot["lt1"],
+                "lt2_setting": snapshot["lt2"],
+                "zone_type": snapshot["zone_type"],
+                "test_comments": snapshot.get("comments", "")
+            }
+            
+            return df, params
         except Exception as e:
             st.warning(f"Error loading snapshot: {e}")
-            return None
+            return None, None
 
-    # Check if a snapshot exists and load it, otherwise use placeholder data
-    snapshot_param = st.query_params.get("snapshot")
-    if snapshot_param:
-        df = load_from_snapshot(snapshot_param)
-        if df is None:  # If there was an error loading the snapshot
+
+    
+    # Use a session state flag to track if we've already loaded the snapshot
+    if "initialized" not in st.session_state:
+        st.session_state.initialized = False
+
+    if not st.session_state.initialized:
+        # Check if a snapshot exists and load it, otherwise use placeholder data
+        snapshot_param = st.query_params.get("snapshot")
+        if snapshot_param:
+            df, params = load_from_snapshot(snapshot_param)
+            if df is None:  # If there was an error loading the snapshot
+                df = init_measurements_df()
+            else:
+                # Set session state variables from the returned parameters
+                # only if they don't already exist
+                for key, value in params.items():
+                    if key not in st.session_state:
+                        st.session_state[key] = value
+                
+                # Mark that we've loaded the snapshot
+                st.session_state.snapshot_loaded = True
+        else:
             df = init_measurements_df()
-    else:
-        df = init_measurements_df()
-        if "test_comments" not in st.session_state:
-            st.session_state.test_comments = ""
-        if "zone_type" not in st.session_state:
-            st.session_state.zone_type = "Seiler 3-zone"  # Default zone type
+            if "test_comments" not in st.session_state:
+                st.session_state.test_comments = ""
+            if "zone_type" not in st.session_state:
+                st.session_state.zone_type = "Seiler 3-zone"  # Default zone type
+
     # Ensure intensity and length are float types
     df['intensity'] = df['intensity'].astype(float)
     df['length'] = df['length'].astype(float)
