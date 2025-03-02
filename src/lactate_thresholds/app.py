@@ -2,6 +2,7 @@ import base64
 import gzip
 import json
 import os
+import pprint
 import urllib.parse
 from io import StringIO
 
@@ -133,45 +134,60 @@ def main():
         encoded_snapshot = urllib.parse.quote(base64_str)
         st.session_state.snapshot_url = f"{get_base_url()}/?snapshot={encoded_snapshot}"
 
+    # Initialize session state attributes that would be set by a snapshot
+    # This needs to be outside of any cached function to run on every page load
+    if "test_comments" not in st.session_state:
+        st.session_state.test_comments = ""
+    if "zone_type" not in st.session_state:
+        st.session_state.zone_type = "Seiler 3-zone"  # Default zone type
+
     @st.cache_data
-    def init_measurements_df(snapshop_b64: str = None) -> pd.DataFrame:
-        if snapshop_b64:
-            # try to load snapshot
-            try:
-                # URL decode the snapshot parameter
-                encoded_data = urllib.parse.unquote(st.query_params["snapshot"])
-                if encoded_data.startswith("gz:"):
-                    # New format: decompress gzipped data
-                    compressed_data = base64.b64decode(encoded_data[3:])  # Skip 'gz:' prefix
-                    json_data = gzip.decompress(compressed_data).decode("utf-8")
-                    snapshot = json.loads(json_data)
-                else:
-                    # Legacy format: direct base64 decode
-                    snapshot = json.loads(base64.b64decode(encoded_data).decode("utf-8"))
-                df = pd.read_json(StringIO(snapshot["measurements"]))
-                st.session_state.lt1_setting = snapshot["lt1"]
-                st.session_state.lt2_setting = snapshot["lt2"]
-                st.session_state.zone_type = snapshot["zone_type"]
-                # Load comments if available (for backward compatibility)
-                st.session_state.test_comments = snapshot.get("comments", "")
-                return df
-            except Exception as e:
-                st.warning(f"Error loading snapshot: {e}")
-
+    def init_measurements_df() -> pd.DataFrame:
+        """Initialize measurements dataframe with placeholder data."""
         return data_placeholder()
+    
+    def load_from_snapshot(snapshot_b64: str) -> pd.DataFrame:
+        """Load measurements from a snapshot."""
+        try:
+            # URL decode the snapshot parameter
+            encoded_data = urllib.parse.unquote(snapshot_b64)
+            if encoded_data.startswith("gz:"):
+                # New format: decompress gzipped data
+                compressed_data = base64.b64decode(encoded_data[3:])  # Skip 'gz:' prefix
+                json_data = gzip.decompress(compressed_data).decode("utf-8")
+                snapshot = json.loads(json_data)
+            else:
+                # Legacy format: direct base64 decode
+                snapshot = json.loads(base64.b64decode(encoded_data).decode("utf-8"))
+            pprint.pprint(snapshot)
+            df = pd.read_json(StringIO(snapshot["measurements"]))
+            st.session_state.lt1_setting = snapshot["lt1"]
+            st.session_state.lt2_setting = snapshot["lt2"]
+            st.session_state.zone_type = snapshot["zone_type"]
+            # Load comments if available (for backward compatibility)
+            st.session_state.test_comments = snapshot.get("comments", "")
+            return df
+        except Exception as e:
+            st.warning(f"Error loading snapshot: {e}")
+            return None
 
-    df = init_measurements_df(st.query_params.get("snapshot"))
+    # Check if a snapshot exists and load it, otherwise use placeholder data
+    snapshot_param = st.query_params.get("snapshot")
+    if snapshot_param:
+        df = load_from_snapshot(snapshot_param)
+        if df is None:  # If there was an error loading the snapshot
+            df = init_measurements_df()
+    else:
+        df = init_measurements_df()
     # Ensure intensity and length are float types
     df['intensity'] = df['intensity'].astype(float)
     df['length'] = df['length'].astype(float)
     st.title("Lactate Thresholds")
     
-    if "test_comments" not in st.session_state:
-        st.session_state.test_comments = ""
-    
     st.text_area(
         "Comments",
         key="test_comments",
+        value=st.session_state.test_comments,
         placeholder="Add any comments about this test...",
         label_visibility="collapsed",
     )
