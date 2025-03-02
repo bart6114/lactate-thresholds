@@ -161,6 +161,9 @@ def main():
         return data_placeholder()
 
     df = init_measurements_df(st.query_params.get("snapshot"))
+    # Ensure intensity and length are float types
+    df['intensity'] = df['intensity'].astype(float)
+    df['length'] = df['length'].astype(float)
     st.title("Lactate Thresholds")
     
     if "test_comments" not in st.session_state:
