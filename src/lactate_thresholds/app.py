@@ -137,11 +137,11 @@ def main():
     def init_measurements_df() -> pd.DataFrame:
         """Initialize measurements dataframe with placeholder data."""
         return data_placeholder()
-    
+
     def load_from_snapshot(snapshot_b64: str) -> tuple[pd.DataFrame, dict] | tuple[None, None]:
         """
         Load measurements from a snapshot.
-        
+
         Returns:
             A tuple containing:
             - DataFrame with measurements data
@@ -158,24 +158,22 @@ def main():
             else:
                 # Legacy format: direct base64 decode
                 snapshot = json.loads(base64.b64decode(encoded_data).decode("utf-8"))
-            
+
             df = pd.read_json(StringIO(snapshot["measurements"]))
-            
+
             # Return all parameters instead of setting them directly
             params = {
                 "lt1_setting": snapshot["lt1"],
                 "lt2_setting": snapshot["lt2"],
                 "zone_type": snapshot["zone_type"],
-                "test_comments": snapshot.get("comments", "")
+                "test_comments": snapshot.get("comments", ""),
             }
-            
+
             return df, params
         except Exception as e:
             st.warning(f"Error loading snapshot: {e}")
             return None, None
 
-
-    
     # Use a session state flag to track if we've already loaded the snapshot
     if "initialized" not in st.session_state:
         st.session_state.initialized = False
@@ -193,7 +191,7 @@ def main():
                 for key, value in params.items():
                     if key not in st.session_state:
                         st.session_state[key] = value
-                
+
                 # Mark that we've loaded the snapshot
                 st.session_state.snapshot_loaded = True
         else:
@@ -204,10 +202,10 @@ def main():
                 st.session_state.zone_type = "Seiler 3-zone"  # Default zone type
 
     # Ensure intensity and length are float types
-    df['intensity'] = df['intensity'].astype(float)
-    df['length'] = df['length'].astype(float)
+    df["intensity"] = df["intensity"].astype(float)
+    df["length"] = df["length"].astype(float)
     st.title("Lactate Thresholds")
-    
+
     st.text_area(
         "Comments",
         key="test_comments",
