@@ -134,13 +134,6 @@ def main():
         encoded_snapshot = urllib.parse.quote(base64_str)
         st.session_state.snapshot_url = f"{get_base_url()}/?snapshot={encoded_snapshot}"
 
-    # Initialize session state attributes that would be set by a snapshot
-    # This needs to be outside of any cached function to run on every page load
-    if "test_comments" not in st.session_state:
-        st.session_state.test_comments = ""
-    if "zone_type" not in st.session_state:
-        st.session_state.zone_type = "Seiler 3-zone"  # Default zone type
-
     @st.cache_data
     def init_measurements_df() -> pd.DataFrame:
         """Initialize measurements dataframe with placeholder data."""
@@ -179,6 +172,10 @@ def main():
             df = init_measurements_df()
     else:
         df = init_measurements_df()
+        if "test_comments" not in st.session_state:
+            st.session_state.test_comments = ""
+        if "zone_type" not in st.session_state:
+            st.session_state.zone_type = "Seiler 3-zone"  # Default zone type
     # Ensure intensity and length are float types
     df['intensity'] = df['intensity'].astype(float)
     df['length'] = df['length'].astype(float)
@@ -187,7 +184,6 @@ def main():
     st.text_area(
         "Comments",
         key="test_comments",
-        value=st.session_state.test_comments,
         placeholder="Add any comments about this test...",
         label_visibility="collapsed",
     )
