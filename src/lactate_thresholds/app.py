@@ -152,7 +152,6 @@ def main():
             else:
                 # Legacy format: direct base64 decode
                 snapshot = json.loads(base64.b64decode(encoded_data).decode("utf-8"))
-            pprint.pprint(snapshot)
             df = pd.read_json(StringIO(snapshot["measurements"]))
             st.session_state.lt1_setting = snapshot["lt1"]
             st.session_state.lt2_setting = snapshot["lt2"]
