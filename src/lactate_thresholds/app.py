@@ -1,6 +1,8 @@
 import base64
+import gzip
 import json
 import os
+import urllib.parse
 from io import StringIO
 
 import pandas as pd
@@ -119,23 +121,39 @@ def main():
             "lt1": st.session_state.lt_df.loc[0, "intensity"],
             "lt2": st.session_state.lt_df.loc[1, "intensity"],
             "zone_type": st.session_state.zone_type,
+            "comments": st.session_state.test_comments,
         }
 
         json_snapshot = json.dumps(snapshot)
-        base64_str = base64.b64encode(json_snapshot.encode("utf-8")).decode("utf-8")
-
-        st.session_state.snapshot_url = f"{get_base_url()}/?snapshot={base64_str}"
+        # Compress JSON data using gzip and add version indicator
+        compressed_data = gzip.compress(json_snapshot.encode("utf-8"))
+        # Prefix with 'gz:' to indicate compressed format
+        base64_str = "gz:" + base64.b64encode(compressed_data).decode("utf-8")
+        # URL encode the snapshot parameter to handle special characters
+        encoded_snapshot = urllib.parse.quote(base64_str)
+        st.session_state.snapshot_url = f"{get_base_url()}/?snapshot={encoded_snapshot}"
 
     @st.cache_data
     def init_measurements_df(snapshop_b64: str = None) -> pd.DataFrame:
         if snapshop_b64:
             # try to load snapshot
             try:
-                snapshot = json.loads(base64.b64decode(st.query_params["snapshot"]).decode("utf-8"))
+                # URL decode the snapshot parameter
+                encoded_data = urllib.parse.unquote(st.query_params["snapshot"])
+                if encoded_data.startswith("gz:"):
+                    # New format: decompress gzipped data
+                    compressed_data = base64.b64decode(encoded_data[3:])  # Skip 'gz:' prefix
+                    json_data = gzip.decompress(compressed_data).decode("utf-8")
+                    snapshot = json.loads(json_data)
+                else:
+                    # Legacy format: direct base64 decode
+                    snapshot = json.loads(base64.b64decode(encoded_data).decode("utf-8"))
                 df = pd.read_json(StringIO(snapshot["measurements"]))
                 st.session_state.lt1_setting = snapshot["lt1"]
                 st.session_state.lt2_setting = snapshot["lt2"]
                 st.session_state.zone_type = snapshot["zone_type"]
+                # Load comments if available (for backward compatibility)
+                st.session_state.test_comments = snapshot.get("comments", "")
                 return df
             except Exception as e:
                 st.warning(f"Error loading snapshot: {e}")
@@ -144,6 +162,16 @@ def main():
 
     df = init_measurements_df(st.query_params.get("snapshot"))
     st.title("Lactate Thresholds")
+    
+    if "test_comments" not in st.session_state:
+        st.session_state.test_comments = ""
+    
+    st.text_area(
+        "Comments",
+        key="test_comments",
+        placeholder="Add any comments about this test...",
+        label_visibility="collapsed",
+    )
 
     df_editor = st.data_editor(
         df,
@@ -151,6 +179,7 @@ def main():
         use_container_width=True,
         column_config={
             "intensity": st.column_config.NumberColumn("intensity", step=0.1),
+            "length": st.column_config.NumberColumn("length", step=0.1, format="%.2f"),
         },
     )
     results = lt.determine(df_editor)
