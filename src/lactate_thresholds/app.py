@@ -2,7 +2,6 @@ import base64
 import gzip
 import json
 import os
-import pprint
 import urllib.parse
 from io import StringIO
 
